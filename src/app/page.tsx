@@ -42,7 +42,7 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-6xl px-4 pb-20">
       <section className="grid items-center gap-10 py-12 md:grid-cols-2 md:py-20">
-        <div>
+        <div className="enter">
           <p className="mb-4 inline-block rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
             {tr("단국대 유학생 × 한국 학생 버디 매칭", "Dankook international × Korean student buddies")}
           </p>
@@ -63,7 +63,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        <div className="relative">
+        <div className="enter-2 relative">
           <div className="card space-y-3 p-5 shadow-[0_20px_50px_-20px_rgba(0,72,155,0.25)]">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
               <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-600 font-semibold text-white">E</span>
@@ -84,9 +84,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="how" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="enter-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {features.map((f) => (
-          <div key={f.title} className="card p-5">
+          <div key={f.title} className="card card-hover p-5">
             <div className="text-xs font-bold tracking-widest text-brand-600">{f.icon}</div>
             <h3 className="mt-3 font-bold text-brand-900">{f.title}</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{f.body}</p>

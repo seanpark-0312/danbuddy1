@@ -278,7 +278,7 @@ export default function Lobby() {
                 const pick = ai[o.id];
                 const shared = sharedInterests(me, o);
                 return (
-                  <li key={o.id} className="card flex flex-col p-4">
+                  <li key={o.id} className="card card-hover flex flex-col p-4">
                     <div className="flex items-start gap-3">
                       <Avatar p={o} />
                       <div className="min-w-0 flex-1">

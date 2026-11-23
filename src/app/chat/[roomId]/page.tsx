@@ -555,7 +555,7 @@ export default function ChatRoom() {
             {topics.map((t, i) => (
               <li key={i}>
                 <button
-                  className="w-full rounded-lg border border-slate-200 p-3 text-left transition hover:border-brand-500 hover:bg-brand-50"
+                  className="w-full rounded-lg border border-slate-200 p-3 text-left transition hover:-translate-y-0.5 hover:border-brand-500 hover:bg-brand-50"
                   onClick={() => setDraft(t.line)}
                 >
                   <span className="block text-xs font-semibold text-brand-700">{t.topic}</span>
