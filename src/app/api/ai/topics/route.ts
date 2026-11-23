@@ -23,6 +23,31 @@ const FALLBACK = {
     { topic: "家乡美食", line: "고향에서 제일 그리운 음식이 뭐예요?", en: "你最想念家乡的什么美食？" },
     { topic: "周末计划", line: "이번 주말에 뭐 할 거예요?", en: "这个周末打算做什么？" },
   ],
+  es: [
+    { topic: "Tu sitio favorito del campus", line: "캠퍼스에서 제일 좋아하는 곳이 어디예요?", en: "¿Cuál es tu sitio favorito del campus?" },
+    { topic: "Comida de casa", line: "고향에서 제일 그리운 음식이 뭐예요?", en: "¿Qué comida de tu tierra echas más de menos?" },
+    { topic: "Planes para el finde", line: "이번 주말에 뭐 할 거예요?", en: "¿Qué vas a hacer este fin de semana?" },
+  ],
+  fr: [
+    { topic: "Ton endroit préféré du campus", line: "캠퍼스에서 제일 좋아하는 곳이 어디예요?", en: "Quel est ton endroit préféré sur le campus ?" },
+    { topic: "La cuisine de chez toi", line: "고향에서 제일 그리운 음식이 뭐예요?", en: "Quel plat de chez toi te manque le plus ?" },
+    { topic: "Le programme du week-end", line: "이번 주말에 뭐 할 거예요?", en: "Tu fais quoi ce week-end ?" },
+  ],
+  de: [
+    { topic: "Lieblingsort auf dem Campus", line: "캠퍼스에서 제일 좋아하는 곳이 어디예요?", en: "Was ist dein Lieblingsort auf dem Campus?" },
+    { topic: "Essen von zu Hause", line: "고향에서 제일 그리운 음식이 뭐예요?", en: "Welches Essen von zu Hause vermisst du am meisten?" },
+    { topic: "Pläne fürs Wochenende", line: "이번 주말에 뭐 할 거예요?", en: "Was machst du dieses Wochenende?" },
+  ],
+  ru: [
+    { topic: "Любимое место в кампусе", line: "캠퍼스에서 제일 좋아하는 곳이 어디예요?", en: "Какое твоё любимое место в кампусе?" },
+    { topic: "Еда из дома", line: "고향에서 제일 그리운 음식이 뭐예요?", en: "По какой домашней еде ты скучаешь больше всего?" },
+    { topic: "Планы на выходные", line: "이번 주말에 뭐 할 거예요?", en: "Что будешь делать на выходных?" },
+  ],
+  kk: [
+    { topic: "Кампустағы сүйікті орын", line: "캠퍼스에서 제일 좋아하는 곳이 어디예요?", en: "Кампуста ең ұнайтын орның қайда?" },
+    { topic: "Туған жердің тағамы", line: "고향에서 제일 그리운 음식이 뭐예요?", en: "Туған жеріңнің қай тағамын көбірек сағынасың?" },
+    { topic: "Демалыс жоспары", line: "이번 주말에 뭐 할 거예요?", en: "Осы демалыста не істейсің?" },
+  ],
 };
 
 export async function POST(req: Request) {

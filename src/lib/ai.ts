@@ -3,6 +3,11 @@ export const LANG_NAMES: Record<string, string> = {
   en: "English",
   ja: "Japanese",
   zh: "Simplified Chinese",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  ru: "Russian",
+  kk: "Kazakh (Cyrillic)",
   vi: "Vietnamese",
 };
 
