@@ -61,19 +61,26 @@ export function useAiVideo(onError: (key: string) => void) {
   return { state, localStream, camOn, start, stop, toggleCam };
 }
 
-/** Does /buddy/<name>/idle.mp4 exist? */
-function useClipsAvailable(name: string) {
-  const [ok, setOk] = useState<boolean | null>(null);
+type Media = "clips" | "still" | "none" | null;
+
+/** Which media exist for this buddy: video clips, a single still photo, or nothing. */
+function useBuddyMedia(name: string): Media {
+  const [media, setMedia] = useState<Media>(null);
   useEffect(() => {
     let alive = true;
-    fetch(`/buddy/${name}/idle.mp4`, { method: "HEAD" })
-      .then((r) => alive && setOk(r.ok))
-      .catch(() => alive && setOk(false));
+    const has = (f: string) =>
+      fetch(`/buddy/${name}/${f}`, { method: "HEAD" })
+        .then((r) => r.ok)
+        .catch(() => false);
+    (async () => {
+      const m: Media = (await has("idle.mp4")) ? "clips" : (await has("still.jpg")) ? "still" : "none";
+      if (alive) setMedia(m);
+    })();
     return () => {
       alive = false;
     };
   }, [name]);
-  return ok;
+  return media;
 }
 
 export function AiBuddyScreen({
@@ -93,7 +100,8 @@ export function AiBuddyScreen({
   label: string;
   connectingText: string;
 }) {
-  const clips = useClipsAvailable(name);
+  const media = useBuddyMedia(name);
+  const clips = media === "clips";
   const [helloDone, setHelloDone] = useState(false);
   const idle = useRef<HTMLVideoElement>(null);
   const talk = useRef<HTMLVideoElement>(null);
@@ -150,7 +158,18 @@ export function AiBuddyScreen({
           )}
         </>
       )}
-      {show && clips === false && <Placeholder name={displayName} talking={talking} />}
+      {show && media === "still" && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`${base}/still.jpg`} alt="" aria-hidden className={`${layer} buddy-still ${talking ? "buddy-talking" : ""}`} />
+      )}
+      {show && media === "none" && <Placeholder name={displayName} talking={talking} />}
+      {show && talking && media !== "none" && (
+        <span className="absolute right-3 top-3 flex h-6 items-end gap-0.5 rounded-full bg-slate-900/60 px-2 py-1.5" aria-hidden>
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} className="buddy-bar w-1 rounded-full bg-white" style={{ animationDelay: `${i * 120}ms` }} />
+          ))}
+        </span>
+      )}
       {!show && (
         <div className="grid h-full place-items-center text-sm text-slate-300">
           <span className="flex items-center gap-2">
