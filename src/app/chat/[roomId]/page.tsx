@@ -86,7 +86,6 @@ export default function ChatRoom() {
   const [confirmEnd, setConfirmEnd] = useState<"ai" | "human" | "leave" | null>(null);
   // swipe from left to right to go back to the lobby (asks first, like the old Leave button)
   const [dragX, setDragX] = useState(0);
-  const [swipeHint, setSwipeHint] = useState(false);
   const swipe = useRef<{ x: number; y: number; on: boolean } | null>(null);
   const swipeGoal = () => Math.min(120, window.innerWidth * 0.3);
   function onSwipeStart(e: React.TouchEvent) {
@@ -111,17 +110,6 @@ export default function ChatRoom() {
     swipe.current = null;
     setDragX(0);
   }
-  useEffect(() => {
-    // tell phone users once how to leave, since there is no button for it
-    if (!window.matchMedia("(pointer: coarse)").matches) return;
-    try {
-      if (sessionStorage.getItem("danbuddy.swipeHint")) return;
-      sessionStorage.setItem("danbuddy.swipeHint", "1");
-    } catch {}
-    setSwipeHint(true);
-    const t = setTimeout(() => setSwipeHint(false), 4500);
-    return () => clearTimeout(t);
-  }, []);
   const [channel, setChannel] = useState<RTChannel | null>(null);
   const [friend, setFriend] = useState<"none" | "sent" | "incoming" | "friends">("none");
   const friendRef = useRef(friend);
@@ -950,13 +938,6 @@ export default function ChatRoom() {
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {swipeHint && (
-        <div role="status" className="pointer-events-none fixed bottom-44 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-slate-900/80 px-4 py-2 text-sm text-white">
-          <span aria-hidden>👉</span>
-          {tr("화면을 오른쪽으로 밀면 대화방을 나갈 수 있어요", "Swipe right to leave the chat")}
         </div>
       )}
 

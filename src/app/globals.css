@@ -9,7 +9,7 @@
   --color-brand-700: #003a7d;
   --color-brand-900: #0b2447;
   --color-coral-500: #1a62b8;
-  --font-sans: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
@@ -40,6 +40,8 @@ body {
   background: #f7f9fc;
   color: #0f172a;
   font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: -0.01em;
   overflow-wrap: anywhere;
 }
 

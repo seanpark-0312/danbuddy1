@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 import { LangProvider } from "@/lib/i18n";
 import Header from "@/components/Header";
