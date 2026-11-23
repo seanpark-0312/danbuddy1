@@ -292,7 +292,7 @@ export default function Lobby() {
                         </p>
                       </div>
                       <span className="text-right">
-                        <span className="block text-lg font-bold leading-none text-brand-600">{score}</span>
+                        <span className="block text-lg font-bold leading-none tabular-nums text-brand-600">{score}</span>
                         <span className="text-[10px] text-slate-400">{tr("궁합", "fit")}</span>
                       </span>
                     </div>
@@ -369,7 +369,9 @@ export default function Lobby() {
       )}
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm text-white">{toast}</div>
+        <div role="status" aria-live="polite" className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm text-white">
+          {toast}
+        </div>
       )}
     </main>
   );
@@ -377,8 +379,10 @@ export default function Lobby() {
 
 function Modal({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-40 grid place-items-center bg-slate-900/40 p-4">
-      <div className="card w-full max-w-sm p-6 shadow-xl">{children}</div>
+    <div className="fixed inset-0 z-40 grid place-items-center overscroll-contain bg-slate-900/40 p-4">
+      <div role="dialog" aria-modal="true" className="card w-full max-w-sm p-6 shadow-xl">
+        {children}
+      </div>
     </div>
   );
 }

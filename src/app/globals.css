@@ -16,6 +16,26 @@
   color-scheme: light;
 }
 
+html {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+/* Keyboard focus for links and other controls that don't use .btn */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
 body {
   background: #f7f9fc;
   color: #0f172a;
@@ -33,7 +53,7 @@ html:lang(en) body {
   @apply rounded-xl border border-slate-200 bg-white;
 }
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition duration-150 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
 }
 @utility btn-primary {
   @apply btn bg-brand-600 text-white hover:bg-brand-700;
@@ -45,7 +65,7 @@ html:lang(en) body {
   @apply btn bg-coral-500 text-white hover:brightness-95;
 }
 @utility chip {
-  @apply inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm transition;
+  @apply inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1;
 }
 @utility input {
   @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100;

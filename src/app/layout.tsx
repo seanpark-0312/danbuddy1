@@ -16,8 +16,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body className="min-h-dvh antialiased">
         <LangProvider>
+          <a
+            href="#content"
+            className="sr-only z-50 rounded-lg bg-brand-600 px-4 py-2 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-3"
+          >
+            Skip to content
+          </a>
           <Header />
-          {children}
+          <div id="content">{children}</div>
         </LangProvider>
       </body>
     </html>

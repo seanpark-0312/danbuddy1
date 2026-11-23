@@ -133,4 +133,6 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "Video chat, if you like": { ja: "希望すればビデオチャットも", zh: "想要的话还能视频聊天" },
   "Hit it off in chat? Switch to video chat and talk face to face. You can go back to text anytime.": { ja: "チャットで話が合ったら、ビデオチャットで顔を見ながら話せます。いつでもテキストに戻れます。", zh: "聊得投机的话，可以切换到视频聊天面对面交流，也随时可以回到文字聊天。" },
   "Video chat too, whenever you like": { ja: "希望すればビデオチャットでも話せる", zh: "想要时也可以视频聊天" },
+  "Still missing: ": { ja: "未入力の必須項目：", zh: "还有必填项未填写：" },
+  "Interests": { ja: "興味", zh: "兴趣" },
 };

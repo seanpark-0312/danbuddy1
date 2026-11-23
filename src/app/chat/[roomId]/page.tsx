@@ -150,6 +150,17 @@ export default function ChatRoom() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partnerLeft]);
 
+  // Escape closes the confirmation dialogs
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setShowReport(false);
+      setShowVideoRules(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, typing, aiThinking]);
@@ -338,7 +349,7 @@ export default function ChatRoom() {
           <div className="relative bg-slate-900">
             <div className="aspect-video max-h-[45vh] w-full">
               {video.remoteStream ? (
-                <VideoEl stream={video.remoteStream} className="h-full w-full object-contain" />
+                <VideoEl stream={video.remoteStream} label={tr("상대 화면", "Your buddy's video")} className="h-full w-full object-contain" />
               ) : (
                 <div className="grid h-full place-items-center text-sm text-slate-300">{tr("연결 중…", "Connecting…")}</div>
               )}
@@ -346,15 +357,16 @@ export default function ChatRoom() {
             {video.localStream && (
               <VideoEl
                 stream={video.localStream}
+                label={tr("내 화면", "Your video")}
                 muted
                 className="absolute bottom-3 right-3 w-28 rounded-lg border-2 border-white/70 object-cover sm:w-40"
               />
             )}
             <div className="absolute bottom-3 left-3 flex gap-2">
-              <button className="btn bg-white/90 px-3 py-1.5 text-slate-800" onClick={video.toggleMic}>
+              <button className="btn bg-white/90 px-3 py-1.5 text-slate-800" aria-pressed={!video.micOn} onClick={video.toggleMic}>
                 {video.micOn ? tr("마이크 끄기", "Mute") : tr("마이크 켜기", "Unmute")}
               </button>
-              <button className="btn bg-white/90 px-3 py-1.5 text-slate-800" onClick={video.toggleCam}>
+              <button className="btn bg-white/90 px-3 py-1.5 text-slate-800" aria-pressed={!video.camOn} onClick={video.toggleCam}>
                 {video.camOn ? tr("카메라 끄기", "Camera off") : tr("카메라 켜기", "Camera on")}
               </button>
               <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={video.end}>
@@ -366,7 +378,7 @@ export default function ChatRoom() {
 
         {/* banners */}
         {video.state === "incoming" && (
-          <div className="flex flex-wrap items-center gap-3 border-b border-brand-100 bg-brand-50 px-4 py-3 text-sm">
+          <div role="alert" className="flex flex-wrap items-center gap-3 border-b border-brand-100 bg-brand-50 px-4 py-3 text-sm">
             <VideoIcon />
             <span className="flex-1 text-brand-900">
               {tr("{name} 님이 화상 대화를 요청했어요. 수락하면 카메라·마이크가 켜져요.", "{name} wants to switch to video. Accepting turns on your camera and mic.", { name: partner.nickname })}
@@ -390,7 +402,7 @@ export default function ChatRoom() {
         )}
 
         {/* messages */}
-        <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+        <div className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4" role="log" aria-live="polite">
           <div className="mx-auto max-w-md rounded-lg bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">
             {isAi
               ? tr("AI 연습 버디와의 대화예요. 실제 사람이 아니에요.", "This is an AI practice buddy, not a real person.")
@@ -479,6 +491,9 @@ export default function ChatRoom() {
           )}
           <div className="flex items-end gap-2">
             <textarea
+              name="message"
+              aria-label={tr("메시지를 입력하세요", "Type a message")}
+              autoComplete="off"
               className="input max-h-32 min-h-11 flex-1 resize-none"
               rows={1}
               value={draft}
@@ -570,8 +585,8 @@ export default function ChatRoom() {
       </aside>
 
       {showVideoRules && (
-        <div className="fixed inset-0 z-40 grid place-items-center bg-slate-900/40 p-4">
-          <div className="card w-full max-w-sm p-6 shadow-xl">
+        <div className="fixed inset-0 z-40 grid place-items-center overscroll-contain bg-slate-900/40 p-4">
+          <div role="dialog" aria-modal="true" className="card w-full max-w-sm p-6 shadow-xl">
             <p className="text-lg font-semibold">{tr("화상 대화를 요청할까요?", "Request a video call?")}</p>
             <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
               <li>{tr("상대가 수락해야만 화상이 시작돼요.", "Video starts only if your buddy accepts.")}</li>
@@ -597,8 +612,8 @@ export default function ChatRoom() {
       )}
 
       {showReport && (
-        <div className="fixed inset-0 z-40 grid place-items-center bg-slate-900/40 p-4">
-          <div className="card w-full max-w-sm p-6 shadow-xl">
+        <div className="fixed inset-0 z-40 grid place-items-center overscroll-contain bg-slate-900/40 p-4">
+          <div role="dialog" aria-modal="true" className="card w-full max-w-sm p-6 shadow-xl">
             <p className="text-lg font-semibold">{tr("신고하고 차단할까요?", "Report and block?")}</p>
             <p className="mt-1 text-sm text-slate-600">{tr("대화가 종료되고 이 사용자는 다시 매칭되지 않아요.", "The chat ends and you won't be matched with this person again.")}</p>
             <div className="mt-4 grid gap-2">
@@ -623,12 +638,12 @@ export default function ChatRoom() {
   );
 }
 
-function VideoEl({ stream, muted, className }: { stream: MediaStream; muted?: boolean; className?: string }) {
+function VideoEl({ stream, muted, className, label }: { stream: MediaStream; muted?: boolean; className?: string; label: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (ref.current) ref.current.srcObject = stream;
   }, [stream]);
-  return <video ref={ref} autoPlay playsInline muted={muted} className={className} />;
+  return <video ref={ref} autoPlay playsInline muted={muted} aria-label={label} className={className} />;
 }
 
 function VideoIcon() {

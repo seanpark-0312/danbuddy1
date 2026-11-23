@@ -30,7 +30,11 @@ export function Avatar({ p, size = "md" }: { p: Profile; size?: "sm" | "md" | "l
   const cls = size === "lg" ? "h-14 w-14 text-xl" : size === "sm" ? "h-8 w-8 text-xs" : "h-11 w-11 text-base";
   const tone = TONES[[...p.id].reduce((a, c) => a + c.charCodeAt(0), 0) % TONES.length];
   const initial = [...p.nickname.trim()][0]?.toUpperCase() ?? "?";
-  return <span className={`grid shrink-0 place-items-center rounded-full font-semibold ${tone} ${cls}`}>{initial}</span>;
+  return (
+    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-full font-semibold ${tone} ${cls}`}>
+      {initial}
+    </span>
+  );
 }
 
 export function RoleBadge({ p }: { p: Profile }) {
