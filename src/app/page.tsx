@@ -24,10 +24,10 @@ export default function Home() {
     },
     {
       icon: "03",
-      title: tr("AI 번역·대화 주제", "AI translation & topics"),
+      title: tr("AI 번역", "AI translation"),
       body: tr(
-        "말이 막히면 메시지 번역, 표현 팁, 다음 대화 주제를 AI가 바로 제안해요.",
-        "Stuck? Get instant translation, expression tips and next-topic ideas.",
+        "말이 막히면 메시지 번역과 표현 팁을 AI가 바로 알려 줘요.",
+        "Stuck? Get instant translation and expression tips from AI.",
       ),
     },
     {

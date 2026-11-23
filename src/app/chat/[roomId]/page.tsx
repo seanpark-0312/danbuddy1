@@ -13,11 +13,6 @@ import { SelfTile } from "@/components/SelfTile";
 import { AttachButton, PhotoViewer } from "@/components/PhotoAttach";
 import { PipStage } from "@/components/PipStage";
 
-interface Topic {
-  topic: string;
-  line: string;
-  en: string;
-}
 interface Translation {
   text: string | null;
   tip?: string;
@@ -74,8 +69,6 @@ export default function ChatRoom() {
   const [typing, setTyping] = useState(false);
   const [aiThinking, setAiThinking] = useState(false);
   const [translations, setTranslations] = useState<Record<string, Translation>>({});
-  const [topics, setTopics] = useState<Topic[]>([]);
-  const [topicsLoading, setTopicsLoading] = useState(false);
   const [draftBusy, setDraftBusy] = useState(false);
   const [draftError, setDraftError] = useState<string | null>(null);
   const [showReport, setShowReport] = useState(false);
@@ -310,36 +303,6 @@ export default function ChatRoom() {
     }
   }
 
-  const loadTopics = useCallback(async () => {
-    if (!me) return;
-    setTopicsLoading(true);
-    try {
-      const res = await fetch("/api/ai/topics", {
-        method: "POST",
-        body: JSON.stringify({
-          me,
-          partner,
-          lang,
-          recent: messages
-            .filter((m) => m.from !== "system")
-            .slice(-12)
-            .map((m) => ({ who: m.from === me.id ? "me" : "partner", text: m.text })),
-        }),
-      });
-      const data = await res.json();
-      setTopics(data.topics ?? []);
-    } finally {
-      setTopicsLoading(false);
-    }
-  }, [me, partner, lang, messages]);
-
-  const topicsLoaded = useRef(false);
-  useEffect(() => {
-    if (me && partner && !topicsLoaded.current) {
-      topicsLoaded.current = true;
-      loadTopics();
-    }
-  }, [me, partner, loadTopics]);
 
   function send(text = draft) {
     const t = text.trim();
@@ -771,20 +734,6 @@ export default function ChatRoom() {
             send();
           }}
         >
-          {topics.length > 0 && (
-            <div data-noswipe className="-mx-3 mb-2 flex gap-2 overflow-x-auto px-3 lg:hidden">
-              {topics.map((t, i) => (
-                <button
-                  type="button"
-                  key={i}
-                  onClick={() => setDraft(t.line)}
-                  className="shrink-0 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs text-brand-700"
-                >
-                  ✦ {t.topic}
-                </button>
-              ))}
-            </div>
-          )}
           {photo && (
             <div className="mb-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -877,30 +826,6 @@ export default function ChatRoom() {
           </div>
         </div>
 
-        <div className="card p-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-brand-900">✦ {tr("AI 대화 주제", "AI topic ideas")}</h3>
-            <button className="text-xs text-brand-600 hover:underline disabled:opacity-50" onClick={loadTopics} disabled={topicsLoading}>
-              {topicsLoading ? tr("생성 중…", "Thinking…") : tr("새로 추천", "Refresh")}
-            </button>
-          </div>
-          <p className="mt-1 text-xs text-slate-500">{tr("누르면 입력창에 넣어 드려요.", "Tap to put it in the message box.")}</p>
-          <ul className="mt-3 space-y-2">
-            {topics.map((t, i) => (
-              <li key={i}>
-                <button
-                  className="w-full rounded-lg border border-slate-200 p-3 text-left transition hover:-translate-y-0.5 hover:border-brand-500 hover:bg-brand-50"
-                  onClick={() => setDraft(t.line)}
-                >
-                  <span className="block text-xs font-semibold text-brand-700">{t.topic}</span>
-                  <span className="mt-1 block text-sm text-slate-800">{t.line}</span>
-                  <span className="mt-0.5 block text-xs text-slate-500">{t.en}</span>
-                </button>
-              </li>
-            ))}
-            {!topics.length && topicsLoading && <li className="text-sm text-slate-400">{tr("불러오는 중…", "Loading…")}</li>}
-          </ul>
-        </div>
       </aside>
 
       {showVideoRules && (

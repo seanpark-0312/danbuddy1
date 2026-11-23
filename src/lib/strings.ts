@@ -191,4 +191,6 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "Your buddy said not now to the friend request.": { ja: "相手は友だち申請を今回は見送りました。", zh: "对方暂时没有接受好友申请。" },
   "Your friend {name} wants to chat": { ja: "友だちの{name}さんが話したがっています", zh: "好友 {name} 想和你聊天" },
   "Swipe right to leave the chat": { ja: "右にスワイプするとチャットを退出できます", zh: "向右滑动即可离开聊天" },
+  "AI translation": { ja: "AI翻訳", zh: "AI 翻译" },
+  "Stuck? Get instant translation and expression tips from AI.": { ja: "言葉に詰まったら、AIがすぐに翻訳と表現のヒントを教えてくれます。", zh: "说不出来时，AI 会马上提供翻译和表达建议。" },
 };
