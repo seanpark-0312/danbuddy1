@@ -147,4 +147,5 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "The buddy's video is AI-generated. It is not a real person.": { ja: "AIバディの映像はAIで作られたものです。実在の人物ではありません。", zh: "AI 伙伴的视频由 AI 生成，并非真人。" },
   "Your video stays in this browser. It is never sent or recorded.": { ja: "自分の映像はこのブラウザ内だけで表示され、送信・録画されません。", zh: "你的视频只在本浏览器中显示，不会被发送或录制。" },
   "Turn on my camera": { ja: "カメラをオンにする", zh: "打开我的摄像头" },
+  "No video": { ja: "ビデオなし", zh: "无视频" },
 };

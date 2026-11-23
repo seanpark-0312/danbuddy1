@@ -160,7 +160,7 @@ export function AiBuddyScreen({
       )}
       {show && media === "still" && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={`${base}/still.jpg`} alt="" aria-hidden className={`${layer} buddy-still ${talking ? "buddy-talking" : ""}`} />
+        <img src={`${base}/still.jpg`} alt="" aria-hidden className={layer} />
       )}
       {show && media === "none" && <Placeholder name={displayName} talking={talking} />}
       {show && talking && media !== "none" && (
@@ -184,7 +184,7 @@ export function AiBuddyScreen({
         </span>
       )}
       {show && caption && (
-        <p className="absolute bottom-14 left-3 right-32 mx-auto max-w-xl rounded-lg sm:right-48 bg-slate-900/70 px-3 py-1.5 text-center text-sm leading-snug text-white backdrop-blur sm:bottom-16">
+        <p className="absolute bottom-14 left-3 right-44 mx-auto max-w-xl rounded-lg sm:right-60 bg-slate-900/70 px-3 py-1.5 text-center text-sm leading-snug text-white backdrop-blur sm:bottom-16">
           {caption}
         </p>
       )}

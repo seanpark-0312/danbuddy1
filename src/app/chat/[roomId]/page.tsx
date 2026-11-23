@@ -9,6 +9,7 @@ import { sharedInterests } from "@/lib/matching";
 import type { ChatMessage, Profile } from "@/lib/types";
 import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
 import { AiBuddyScreen, speak, useAiVideo } from "@/components/AiVideo";
+import { SelfTile } from "@/components/SelfTile";
 
 interface Topic {
   topic: string;
@@ -385,21 +386,18 @@ export default function ChatRoom() {
                 <div className="grid h-full place-items-center text-sm text-slate-300">{tr("연결 중…", "Connecting…")}</div>
               )}
             </div>
-            {video.localStream && (
-              <VideoEl
-                stream={video.localStream}
-                label={tr("내 화면", "Your video")}
-                muted
-                className="absolute bottom-3 right-3 w-28 rounded-lg border-2 border-white/70 object-cover sm:w-40"
-              />
-            )}
+            <SelfTile
+              stream={video.localStream}
+              camOn={video.camOn}
+              name={me.nickname}
+              noVideoText={tr("비디오 없음", "No video")}
+              videoLabel={tr("내 화면", "Your video")}
+              controls={[
+                { kind: "mic", on: video.micOn, label: video.micOn ? tr("마이크 끄기", "Mute") : tr("마이크 켜기", "Unmute"), onClick: video.toggleMic },
+                { kind: "cam", on: video.camOn, label: video.camOn ? tr("카메라 끄기", "Camera off") : tr("카메라 켜기", "Camera on"), onClick: video.toggleCam },
+              ]}
+            />
             <div className="absolute bottom-3 left-3 flex gap-2">
-              <button className="btn bg-white/90 px-3 py-1.5 text-slate-800" aria-pressed={!video.micOn} onClick={video.toggleMic}>
-                {video.micOn ? tr("마이크 끄기", "Mute") : tr("마이크 켜기", "Unmute")}
-              </button>
-              <button className="btn bg-white/90 px-3 py-1.5 text-slate-800" aria-pressed={!video.camOn} onClick={video.toggleCam}>
-                {video.camOn ? tr("카메라 끄기", "Camera off") : tr("카메라 켜기", "Camera on")}
-              </button>
               <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={video.end}>
                 {tr("텍스트로 돌아가기", "Back to text")}
               </button>
@@ -425,28 +423,28 @@ export default function ChatRoom() {
                 }
               />
             </div>
-            {aiVideo.localStream && (
-              <VideoEl
+            {aiVideo.state !== "camera" && (
+              <SelfTile
                 stream={aiVideo.localStream}
-                label={tr("내 화면", "Your video")}
-                muted
-                className={`absolute bottom-3 right-3 w-28 -scale-x-100 rounded-lg border-2 border-white/70 object-cover sm:w-40 ${aiVideo.camOn ? "" : "opacity-0"}`}
+                camOn={aiVideo.camOn}
+                name={me.nickname}
+                noVideoText={tr("비디오 없음", "No video")}
+                videoLabel={tr("내 화면", "Your video")}
+                controls={[
+                  {
+                    kind: "speaker",
+                    on: voiceOn,
+                    label: voiceOn ? tr("음성 끄기", "Voice off") : tr("음성 켜기", "Voice on"),
+                    onClick: () => {
+                      if (voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+                      setVoiceOn(!voiceOn);
+                    },
+                  },
+                  { kind: "cam", on: aiVideo.camOn, label: aiVideo.camOn ? tr("카메라 끄기", "Camera off") : tr("카메라 켜기", "Camera on"), onClick: aiVideo.toggleCam },
+                ]}
               />
             )}
             <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
-              <button className="btn bg-white/90 px-3 py-1.5 text-slate-800" aria-pressed={!aiVideo.camOn} onClick={aiVideo.toggleCam}>
-                {aiVideo.camOn ? tr("카메라 끄기", "Camera off") : tr("카메라 켜기", "Camera on")}
-              </button>
-              <button
-                className="btn bg-white/90 px-3 py-1.5 text-slate-800"
-                aria-pressed={voiceOn}
-                onClick={() => {
-                  if (voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
-                  setVoiceOn(!voiceOn);
-                }}
-              >
-                {voiceOn ? tr("음성 끄기", "Voice off") : tr("음성 켜기", "Voice on")}
-              </button>
               <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={() => stopAiVideo()}>
                 {tr("텍스트로 돌아가기", "Back to text")}
               </button>

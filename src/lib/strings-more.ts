@@ -414,4 +414,5 @@ export const MORE: Record<string, [string, string, string, string, string]> = {
   "The buddy's video is AI-generated. It is not a real person.": ["El vídeo del compañero está generado por IA. No es una persona real.", "La vidéo du buddy est générée par IA. Ce n’est pas une vraie personne.", "Das Video des Buddys ist KI-generiert. Es ist keine echte Person.", "Видео бадди создано ИИ. Это не реальный человек.", "Баддидің бейнесін ЖИ жасаған. Бұл нақты адам емес."],
   "Your video stays in this browser. It is never sent or recorded.": ["Tu vídeo se queda en este navegador. Nunca se envía ni se graba.", "Ta vidéo reste dans ce navigateur. Elle n’est jamais envoyée ni enregistrée.", "Dein Video bleibt in diesem Browser. Es wird nie gesendet oder aufgezeichnet.", "Ваше видео остаётся в этом браузере. Оно не передаётся и не записывается.", "Бейнеңіз осы браузерде ғана қалады. Ол жіберілмейді және жазылмайды."],
   "Turn on my camera": ["Encender mi cámara", "Activer ma caméra", "Meine Kamera einschalten", "Включить мою камеру", "Камерамды қосу"],
+  "No video": ["Sin vídeo", "Pas de vidéo", "Kein Video", "Нет видео", "Бейне жоқ"],
 };
