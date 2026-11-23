@@ -90,6 +90,8 @@ export function AiBuddyScreen({
   talking,
   label,
   connectingText,
+  helloDone: helloDoneProp,
+  onHelloDone,
 }: {
   name: string;
   displayName: string;
@@ -97,17 +99,28 @@ export function AiBuddyScreen({
   talking: boolean;
   label: string;
   connectingText: string;
+  /** optional: keep "hello played" outside, so moving the screen into a PiP window doesn't replay it */
+  helloDone?: boolean;
+  onHelloDone?: () => void;
 }) {
   const media = useBuddyMedia(name);
   const clips = media === "clips";
-  const [helloDone, setHelloDone] = useState(false);
+  const [helloDoneLocal, setHelloDoneLocal] = useState(false);
+  const helloDone = helloDoneProp ?? helloDoneLocal;
+  const setHelloDone = useCallback(
+    (v: boolean) => {
+      setHelloDoneLocal(v);
+      if (v) onHelloDone?.();
+    },
+    [onHelloDone],
+  );
   const idle = useRef<HTMLVideoElement>(null);
   const talk = useRef<HTMLVideoElement>(null);
   const hello = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (state !== "on") setHelloDone(false);
-  }, [state]);
+  }, [state, setHelloDone]);
 
   // keep the clips playing; switch which one is visible
   useEffect(() => {
@@ -120,7 +133,7 @@ export function AiBuddyScreen({
         talk.current.play().catch(() => {});
       }
     }
-  }, [state, clips, talking, helloDone]);
+  }, [state, clips, talking, helloDone, setHelloDone]);
 
   const base = `/buddy/${name}`;
   const show = state === "on";

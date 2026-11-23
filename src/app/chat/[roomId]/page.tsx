@@ -11,6 +11,7 @@ import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
 import { AiBuddyScreen, speak, useAiVideo } from "@/components/AiVideo";
 import { SelfTile } from "@/components/SelfTile";
 import { AttachButton, PhotoViewer } from "@/components/PhotoAttach";
+import { PipStage } from "@/components/PipStage";
 
 interface Topic {
   topic: string;
@@ -78,6 +79,9 @@ export default function ChatRoom() {
   const [draftError, setDraftError] = useState<string | null>(null);
   const [showReport, setShowReport] = useState(false);
   const [showVideoRules, setShowVideoRules] = useState(false);
+  const aiPipVideo = useRef<HTMLVideoElement>(null);
+  const [aiHelloDone, setAiHelloDone] = useState(false);
+  const markAiHelloDone = useCallback(() => setAiHelloDone(true), []);
   const [confirmEnd, setConfirmEnd] = useState<"ai" | "human" | null>(null);
   const [channel, setChannel] = useState<RTChannel | null>(null);
   const seenPartner = useRef(false);
@@ -145,6 +149,9 @@ export default function ChatRoom() {
 
   // video call with the AI practice buddy (pre-generated clips + browser voice)
   const aiVideo = useAiVideo(addSystem);
+  useEffect(() => {
+    if (aiVideo.state !== "on") setAiHelloDone(false);
+  }, [aiVideo.state]);
   const aiVideoOn = useRef(false);
   aiVideoOn.current = aiVideo.state === "on";
   const [aiTalking, setAiTalking] = useState(false);
@@ -396,10 +403,12 @@ export default function ChatRoom() {
 
         {/* video area */}
         {videoActive && (
-          <div className="relative bg-slate-900">
-            <div className="aspect-video max-h-[45vh] w-full">
+          <PipStage fallbackVideo={() => document.querySelector<HTMLVideoElement>("video[data-pip-source]")}>
+            {(pipButton, inPip) => (
+          <div className={`relative bg-slate-900 ${inPip ? "h-full" : ""}`}>
+            <div className={inPip ? "h-full w-full" : "aspect-video max-h-[45vh] w-full"}>
               {video.remoteStream ? (
-                <VideoEl stream={video.remoteStream} label={tr("상대 화면", "Your buddy's video")} className="h-full w-full object-contain" />
+                <VideoEl pipSource stream={video.remoteStream} label={tr("상대 화면", "Your buddy's video")} className="h-full w-full object-contain" />
               ) : (
                 <div className="grid h-full place-items-center text-sm text-slate-300">{tr("연결 중…", "Connecting…")}</div>
               )}
@@ -416,18 +425,27 @@ export default function ChatRoom() {
               ]}
             />
             <div className="absolute bottom-3 left-3 flex gap-2">
-              <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={() => setConfirmEnd("human")}>
-                {tr("텍스트로 돌아가기", "Back to text")}
-              </button>
+              {!inPip && (
+                <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={() => setConfirmEnd("human")}>
+                  {tr("텍스트로 돌아가기", "Back to text")}
+                </button>
+              )}
+              {pipButton}
             </div>
           </div>
+            )}
+          </PipStage>
         )}
 
         {/* AI practice buddy video */}
         {isAi && aiVideo.state !== "off" && (
-          <div className="relative bg-slate-900">
-            <div className="aspect-video max-h-[45vh] w-full">
+          <PipStage fallbackVideo={() => aiPipVideo.current}>
+            {(pipButton, inPip) => (
+          <div className={`relative bg-slate-900 ${inPip ? "h-full" : ""}`}>
+            <div className={inPip ? "h-full w-full" : "aspect-video max-h-[45vh] w-full"}>
               <AiBuddyScreen
+                helloDone={aiHelloDone}
+                onHelloDone={markAiHelloDone}
                 name={partner.id === "ai-emma" ? "emma" : "minjun"}
                 displayName={partner.id === "ai-emma" ? "Emma" : "Minjun"}
                 state={aiVideo.state}
@@ -462,11 +480,29 @@ export default function ChatRoom() {
               />
             )}
             <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
-              <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={() => setConfirmEnd("ai")}>
-                {tr("텍스트로 돌아가기", "Back to text")}
-              </button>
+              {!inPip && (
+                <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={() => setConfirmEnd("ai")}>
+                  {tr("텍스트로 돌아가기", "Back to text")}
+                </button>
+              )}
+              {aiVideo.state === "on" && pipButton}
             </div>
           </div>
+            )}
+          </PipStage>
+        )}
+        {isAi && aiVideo.state === "on" && (
+          // single-video copy of the buddy for browsers that only support video PiP (Safari, Android)
+          <video
+            ref={aiPipVideo}
+            src={`/buddy/${partner.id === "ai-emma" ? "emma" : "minjun"}/${aiTalking ? "talk" : "idle"}.mp4`}
+            muted
+            loop
+            autoPlay
+            playsInline
+            aria-hidden
+            className="pointer-events-none fixed bottom-0 left-0 h-px w-px opacity-0"
+          />
         )}
 
         {/* banners */}
@@ -812,12 +848,12 @@ export default function ChatRoom() {
   );
 }
 
-function VideoEl({ stream, muted, className, label }: { stream: MediaStream; muted?: boolean; className?: string; label: string }) {
+function VideoEl({ stream, muted, className, label, pipSource }: { stream: MediaStream; muted?: boolean; className?: string; label: string; pipSource?: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (ref.current) ref.current.srcObject = stream;
   }, [stream]);
-  return <video ref={ref} autoPlay playsInline muted={muted} aria-label={label} className={className} />;
+  return <video ref={ref} autoPlay playsInline muted={muted} aria-label={label} className={className} data-pip-source={pipSource ? "" : undefined} />;
 }
 
 function VideoIcon() {

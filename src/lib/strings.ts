@@ -167,4 +167,9 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "Remove photo": { ja: "写真を外す", zh: "移除照片" },
   "Photos go straight to your buddy and are not stored on a server.": { ja: "写真はサーバーに保存されず、相手に直接届きます。", zh: "照片不会保存在服务器上，会直接发给对方。" },
   "AI translation isn't available right now. Please try again in a moment.": { ja: "今はAI翻訳が使えません。少ししてからもう一度お試しください。", zh: "AI 翻译暂时不可用，请稍后再试。" },
+  "Pop out": { ja: "小窓で表示", zh: "小窗口观看" },
+  "Close small window": { ja: "小窓を閉じる", zh: "关闭小窗口" },
+  "This browser can't open a small window.": { ja: "このブラウザでは小窓を開けません。", zh: "此浏览器无法打开小窗口。" },
+  "The call is in a small window. It stays on top while you use other tabs.": { ja: "ビデオ通話を小窓で表示中です。他のタブを使っても前面に表示されます。", zh: "视频通话正在小窗口中显示，切换到其他标签页也会一直置顶。" },
+  "Bring it back here": { ja: "この画面に戻す", zh: "回到此页面" },
 };
