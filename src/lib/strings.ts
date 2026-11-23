@@ -12,7 +12,7 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "Video starts only when one asks and the other accepts. Back to text anytime.": { ja: "一方がリクエストし相手が承認したときだけビデオに切り替わります。いつでもテキストに戻れます。", zh: "只有一方请求且对方接受后才会切换到视频，随时可以回到文字聊天。" },
   "Dankook international × Korean student buddies": { ja: "檀国大 留学生 × 韓国人学生 バディマッチング", zh: "檀国大学 留学生 × 韩国学生 伙伴匹配" },
   "The friend you never": { ja: "話しかけられなかったあの友だち、", zh: "那个一直没敢搭话的朋友，" },
-  "got to talk to. Meet them here.": { ja: "AIがつなぎます。", zh: "让 AI 帮你牵线。" },
+  "got to talk to. DanBuddy connects you.": { ja: "DanBuddyがつなぎます。", zh: "让 DanBuddy 帮你牵线。" },
   "Korean students who want international friends and English practice. International students who need help settling into Korea and campus life. Meet the buddy you need, start with chat, and switch to video when you're both ready.": { ja: "外国人の友だちや英会話を求める韓国人学生と、韓国生活・学校生活に慣れたい留学生。お互いに必要なバディと出会い、チャットから始めて、気が合えばビデオで話してみましょう。", zh: "想结交外国朋友、练习英语会话的韩国学生，以及需要适应韩国生活和校园生活的留学生。找到彼此需要的伙伴，从聊天开始，合得来就切换到视频吧。" },
   "Find my buddy": { ja: "バディに会いに行く", zh: "去找伙伴" },
   "How it works": { ja: "使い方を見る", zh: "如何使用？" },

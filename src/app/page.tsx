@@ -49,7 +49,7 @@ export default function Home() {
           <h1 className="text-[32px] font-extrabold leading-tight tracking-tight text-brand-900 md:text-5xl">
             {tr("말 걸기 어려웠던 그 친구,", "The friend you never")}
             <br />
-            <span className="text-brand-600">{tr("AI가 먼저 이어 줄게요.", "got to talk to. Meet them here.")}</span>
+            <span className="text-brand-600">{tr("단버디가 이어 줄게요.", "got to talk to. DanBuddy connects you.")}</span>
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-slate-600">
             {tr(
