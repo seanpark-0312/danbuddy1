@@ -31,10 +31,10 @@ export default function Home() {
     },
     {
       icon: "04",
-      title: tr("동의하면 화상으로", "Video only with consent"),
+      title: tr("원하면 화상채팅까지", "Video chat, if you like"),
       body: tr(
-        "한쪽이 요청하고 상대가 수락했을 때만 화상 대화로 전환돼요. 언제든 텍스트로 복귀.",
-        "Video starts only when one asks and the other accepts. Back to text anytime.",
+        "채팅하다 이야기가 잘 통하면 화상채팅으로 얼굴 보며 대화할 수 있어요. 언제든 다시 텍스트로 돌아올 수 있어요.",
+        "Hit it off in chat? Switch to video chat and talk face to face. You can go back to text anytime.",
       ),
     },
   ];
@@ -61,9 +61,6 @@ export default function Home() {
             <Link href="/onboard" className="btn-primary px-6 py-3 text-base">
               {tr("버디 만나러 가기", "Find my buddy")} →
             </Link>
-            <a href="#how" className="btn-ghost px-6 py-3 text-base">
-              {tr("어떻게 작동하나요?", "How it works")}
-            </a>
           </div>
         </div>
         <div className="relative">
@@ -104,7 +101,7 @@ export default function Home() {
             tr("프로필 작성: 한국 학생/유학생, 관심사, 원하는 도움", "Profile: Korean or international, interests, what you need"),
             tr("로비에서 AI 추천 버디 확인 또는 랜덤 매칭", "See AI-recommended buddies or random match in the lobby"),
             tr("채팅 중 AI 번역·주제 추천으로 대화 이어가기", "Keep chatting with AI translation and topic ideas"),
-            tr("서로 동의하면 화상 대화로 전환", "Switch to video when you both agree"),
+            tr("원하면 화상채팅으로도 이야기 나누기", "Video chat too, whenever you like"),
           ].map((s, i) => (
             <li key={i} className="flex gap-3">
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-600 text-sm font-bold text-white">{i + 1}</span>

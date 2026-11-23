@@ -130,4 +130,7 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "e.g. I just arrived in Korea and want to try Korean BBQ with friends!": { ja: "例：韓国に来たばかりです。友だちと韓国焼肉を食べに行きたいです！", zh: "例：我刚来韩国，想和朋友一起去吃韩式烤肉！" },
   "Required": { ja: "必須項目", zh: "必填项" },
   "Save & find a buddy": { ja: "保存してバディを探す", zh: "保存并寻找伙伴" },
+  "Video chat, if you like": { ja: "希望すればビデオチャットも", zh: "想要的话还能视频聊天" },
+  "Hit it off in chat? Switch to video chat and talk face to face. You can go back to text anytime.": { ja: "チャットで話が合ったら、ビデオチャットで顔を見ながら話せます。いつでもテキストに戻れます。", zh: "聊得投机的话，可以切换到视频聊天面对面交流，也随时可以回到文字聊天。" },
+  "Video chat too, whenever you like": { ja: "希望すればビデオチャットでも話せる", zh: "想要时也可以视频聊天" },
 };
