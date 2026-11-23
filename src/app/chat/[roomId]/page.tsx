@@ -148,7 +148,6 @@ export default function ChatRoom() {
   const aiVideoOn = useRef(false);
   aiVideoOn.current = aiVideo.state === "on";
   const [aiTalking, setAiTalking] = useState(false);
-  const [aiCaption, setAiCaption] = useState<string | null>(null);
   const [voiceOn, setVoiceOn] = useState(true);
   const voiceOnRef = useRef(voiceOn);
   voiceOnRef.current = voiceOn;
@@ -160,7 +159,6 @@ export default function ChatRoom() {
     if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
     aiVideo.stop();
     setAiTalking(false);
-    setAiCaption(null);
     if (announce) addSystem("video-ended");
   }
 
@@ -208,6 +206,7 @@ export default function ChatRoom() {
     if (!me) return;
     setAiThinking(true);
     try {
+      const started = Date.now();
       const res = await fetch("/api/ai/buddy", {
         method: "POST",
         body: JSON.stringify({
@@ -219,10 +218,14 @@ export default function ChatRoom() {
         }),
       });
       const data = await res.json();
+      // A real person needs time to read and type, so show "typing…" for a while before the reply appears.
+      // On video she answers out loud, so the pause is shorter.
+      const pause = aiVideoOn.current ? 1200 + Math.random() * 1300 : replyDelay(String(data.text ?? ""));
+      const wait = pause - (Date.now() - started);
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
       setMessages((prev) => [...prev, { id: crypto.randomUUID(), from: "ai", text: data.text, ts: Date.now() }]);
       setAiThinking(false);
       if (aiVideoOn.current) {
-        setAiCaption(data.text);
         setAiTalking(true);
         await speak(data.text, voiceOnRef.current);
         setAiTalking(false);
@@ -429,7 +432,6 @@ export default function ChatRoom() {
                 displayName={partner.id === "ai-emma" ? "Emma" : "Minjun"}
                 state={aiVideo.state}
                 talking={aiTalking}
-                caption={aiCaption}
                 label={tr("AI 연습 버디 · AI 생성 영상", "AI practice buddy · AI-generated video")}
                 connectingText={
                   aiVideo.state === "camera"
@@ -839,4 +841,11 @@ async function translateText(text: string, target: string): Promise<{ text: stri
   } catch {
     return { text: null, error: "timeout" };
   }
+}
+
+/** How long the AI buddy "types": about 3–5 s for a short reply, up to 8–10 s for a long one. */
+function replyDelay(text: string) {
+  const t = Math.min(1, Math.max(0, (text.length - 15) / 105)); // 15 chars or less = short, 120+ = long
+  const base = 3000 + t * 5000; // 3 s .. 8 s
+  return base + Math.random() * 2000; // plus 0–2 s so it doesn't feel mechanical
 }

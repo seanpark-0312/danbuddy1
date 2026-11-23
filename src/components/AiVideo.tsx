@@ -88,7 +88,6 @@ export function AiBuddyScreen({
   displayName,
   state,
   talking,
-  caption,
   label,
   connectingText,
 }: {
@@ -96,7 +95,6 @@ export function AiBuddyScreen({
   displayName: string;
   state: AiVideoState;
   talking: boolean;
-  caption: string | null;
   label: string;
   connectingText: string;
 }) {
@@ -182,11 +180,6 @@ export function AiBuddyScreen({
         <span className="absolute left-3 top-3 rounded-full bg-slate-900/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur">
           {displayName} · {label}
         </span>
-      )}
-      {show && caption && (
-        <p className="absolute bottom-14 left-3 right-44 mx-auto max-w-xl rounded-lg sm:right-60 bg-slate-900/70 px-3 py-1.5 text-center text-sm leading-snug text-white backdrop-blur sm:bottom-16">
-          {caption}
-        </p>
       )}
     </div>
   );
