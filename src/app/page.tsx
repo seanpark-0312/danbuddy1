@@ -41,69 +41,68 @@ export default function Home() {
   ];
 
   return (
-    <main className="mx-auto max-w-6xl px-4 pb-20">
-      <section className="grid items-center gap-10 py-12 md:grid-cols-2 md:py-20">
-        <div className="enter">
-          <p className="mb-4 inline-block rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
+    <main className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
+      {/* hero: muted navy + sky gradient, students in front of a soft white glow */}
+      <section className="hero-bg enter relative mt-4 overflow-hidden rounded-[28px] text-white md:mt-7 md:h-[530px] md:rounded-[32px]">
+        <div className="relative z-[3] px-6 pt-7 md:absolute md:left-14 md:top-20 md:w-[480px] md:p-0">
+          <p className="inline-block rounded-full border border-white/30 bg-[rgba(5,30,70,0.32)] px-3 py-1.5 text-[12.5px] font-semibold [text-shadow:0_1px_2px_rgba(0,20,60,0.35)] md:text-[13.5px]">
             {tr("단국대 유학생 × 한국 학생 버디 매칭", "Dankook international × Korean student buddies")}
           </p>
-          <h1 className="text-[32px] font-extrabold leading-tight tracking-tight text-brand-900 md:text-5xl">
+          <h1 className="mt-5 text-[29px] font-bold leading-[1.28] tracking-[-0.03em] [text-shadow:0_2px_18px_rgba(0,30,80,0.25)] md:mt-6 md:text-[46px] md:leading-[1.24]">
             {tr("말 걸기 어려웠던 그 친구,", "The friend you never")}
             <br />
-            <span className="text-brand-600">{tr("단버디가 이어 줄게요.", "got to talk to. DanBuddy connects you.")}</span>
+            {tr("단버디가 먼저 이어 줄게요.", "got to talk to. DanBuddy connects you.")}
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+          <p className="mt-3.5 text-[15.5px] leading-relaxed opacity-95 md:hidden">
+            {tr("서로에게 꼭 필요한 버디를 만나 채팅으로 시작하고, 마음이 맞으면 화상으로.", "Meet the buddy you need, start with chat, and switch to video when you click.")}
+          </p>
+          <p className="mt-4 hidden text-[16.5px] leading-relaxed opacity-95 md:block">
             {tr(
-              "외국인 친구와 영어 회화를 원하는 한국 학생, 한국 생활과 학교 적응이 필요한 유학생. 서로에게 꼭 필요한 버디를 만나 채팅으로 시작하고, 마음이 맞으면 화상으로 이야기해 보세요.",
+              "외국인 친구와 영어 회화를 원하는 한국 학생, 한국 생활과 학교 적응이 필요한 유학생. 서로에게 꼭 필요한 버디를 만나 채팅으로 시작하고, 마음이 맞으면 화상으로.",
               "Korean students who want international friends and English practice. International students who need help settling into Korea and campus life. Meet the buddy you need, start with chat, and switch to video when you're both ready.",
             )}
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/onboard" className="btn-primary px-6 py-3 text-base">
-              {tr("버디 만나러 가기", "Find my buddy")} →
-            </Link>
-          </div>
+          <Link
+            href="/onboard"
+            className="mt-8 hidden h-[54px] items-center rounded-2xl bg-white px-6 text-base font-semibold text-brand-600 shadow-[0_10px_30px_rgba(0,40,100,0.25)] transition hover:-translate-y-0.5 md:inline-flex"
+          >
+            {tr("버디 만나러 가기", "Find my buddy")} →
+          </Link>
         </div>
-        <div className="enter-2 relative">
-          <div className="card space-y-3 p-5 shadow-[0_20px_50px_-20px_rgba(0,72,155,0.25)]">
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-600 font-semibold text-white">E</span>
-              <div>
-                <p className="font-semibold">Emma · France</p>
-                <p className="text-xs text-brand-600">✦ {tr("둘 다 카페 탐방과 K-드라마를 좋아해요", "You both love cafes and K-dramas")}</p>
-              </div>
-              <span className="ml-auto text-lg font-bold text-brand-600">92</span>
-            </div>
-            <Bubble side="left">Hi! Do you know a good place to eat near Jukjeon campus? 😊</Bubble>
-            <Bubble side="right">{tr("물론이죠! 정문 앞 칼국수 집 추천해요. Have you tried kalguksu?", "Sure! Try the kalguksu place by the main gate.")}</Bubble>
-            <Bubble side="left">Not yet! Can we go together this Friday?</Bubble>
-            <div className="flex items-center gap-2 rounded-xl bg-brand-50 p-3 text-sm text-brand-900">
-              <span className="flex-1">{tr("Emma 님이 화상 대화를 요청했어요", "Emma asked to switch to video")}</span>
-              <span className="rounded-lg bg-brand-600 px-2 py-1 text-xs font-semibold text-white">{tr("수락", "Accept")}</span>
-            </div>
-          </div>
+        <div className="relative mt-6 h-[250px] md:absolute md:bottom-0 md:right-0 md:mt-0 md:h-full md:w-[640px]">
+          <div
+            aria-hidden
+            className="absolute -inset-x-5 -bottom-8 h-[260px] md:-bottom-10 md:-right-2 md:left-auto md:h-[440px] md:w-[720px]"
+            style={{ background: "radial-gradient(ellipse 55% 52% at 50% 58%, rgba(255,255,255,.55), rgba(255,255,255,.22) 55%, transparent 78%)" }}
+          />
+          <Crew className="crew-glow absolute inset-x-2 bottom-12 md:inset-x-auto md:-bottom-1.5 md:right-7 md:w-[590px]" />
         </div>
       </section>
 
-      <Crew className="enter-3 mx-auto -mt-4 mb-10 max-w-3xl md:-mt-8" />
+      <Link
+        href="/onboard"
+        className="enter-2 relative z-[4] mx-1 -mt-8 flex h-[52px] items-center justify-center rounded-2xl bg-white text-base font-semibold text-brand-600 shadow-[0_10px_30px_rgba(0,40,100,0.25)] md:hidden"
+      >
+        {tr("버디 만나러 가기", "Find my buddy")} →
+      </Link>
 
-      <section className="enter-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="enter-3 mt-4 grid grid-cols-2 gap-3 md:mt-6 md:grid-cols-4 md:gap-4">
         {features.map((f) => (
-          <div key={f.title} className="card card-hover p-5">
-            <div className="text-xs font-bold tracking-widest text-brand-600">{f.icon}</div>
-            <h3 className="mt-3 font-bold text-brand-900">{f.title}</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{f.body}</p>
+          <div key={f.title} className="card p-4 md:p-5">
+            <div className="text-xs font-bold text-[#7a8db0]">{f.icon}</div>
+            <h3 className="mt-1.5 text-[15.5px] font-semibold text-slate-900 md:text-[17px]">{f.title}</h3>
+            <p className="mt-1 text-[13px] leading-normal text-slate-500 md:text-sm">{f.body}</p>
           </div>
         ))}
       </section>
 
-      <section className="mt-12 card p-6 md:p-8">
+      <section className="mt-10 card p-6 md:p-8">
         <h2 className="text-xl font-bold text-brand-900">{tr("이렇게 사용해요", "How to use")}</h2>
         <ol className="mt-4 grid gap-4 md:grid-cols-4">
           {[
             tr("프로필 작성: 한국 학생/유학생, 관심사, 원하는 도움", "Profile: Korean or international, interests, what you need"),
             tr("로비에서 AI 추천 버디 확인 또는 랜덤 매칭", "See AI-recommended buddies or random match in the lobby"),
-            tr("채팅 중 AI 번역·주제 추천으로 대화 이어가기", "Keep chatting with AI translation and topic ideas"),
+            tr("채팅 중 막히면 AI 번역으로 대화 이어가기", "Keep chatting with AI translation when you get stuck"),
             tr("원하면 화상채팅으로도 이야기 나누기", "Video chat too, whenever you like"),
           ].map((s, i) => (
             <li key={i} className="flex gap-3">
@@ -112,7 +111,7 @@ export default function Home() {
             </li>
           ))}
         </ol>
-        <p className="mt-6 rounded-lg border-l-4 border-brand-600 bg-brand-50 p-3 text-sm text-brand-900">
+        <p className="mt-6 rounded-xl bg-brand-50 p-3 text-sm text-brand-900">
           {tr(
             "혼자 체험해 보신다면: 브라우저 창 두 개로 각각 한국 학생·유학생 프로필을 만들어 서로 매칭하거나, 로비의 'AI 연습 버디'와 대화해 보세요.",
             "Trying it alone? Open two browser windows with a Korean and an international profile and match them, or chat with the 'AI practice buddy' in the lobby.",
@@ -120,19 +119,5 @@ export default function Home() {
         </p>
       </section>
     </main>
-  );
-}
-
-function Bubble({ side, children }: { side: "left" | "right"; children: React.ReactNode }) {
-  return (
-    <div className={`flex ${side === "right" ? "justify-end" : ""}`}>
-      <p
-        className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${
-          side === "right" ? "rounded-br-md bg-brand-600 text-white" : "rounded-bl-md bg-slate-100 text-slate-800"
-        }`}
-      >
-        {children}
-      </p>
-    </div>
   );
 }

@@ -24,14 +24,20 @@ export function useLabels() {
   };
 }
 
-const TONES = ["bg-brand-600 text-white", "bg-brand-100 text-brand-700", "bg-brand-900 text-white", "bg-slate-200 text-slate-700"];
+// soft navy + sky gradients (A-2 design), picked per person so avatars differ
+const TONES = [
+  "radial-gradient(circle at 30% 25%, #7cc3f2, #2f7bd0 55%, #00489b)",
+  "radial-gradient(circle at 70% 20%, #5aa9e6, #1d5fb0 60%, #0b2447)",
+  "radial-gradient(circle at 25% 75%, #9fd3f5, #3b82c8 55%, #00489b)",
+  "radial-gradient(circle at 60% 30%, #7cc3f2, #00489b 70%)",
+];
 
 export function Avatar({ p, size = "md" }: { p: Profile; size?: "sm" | "md" | "lg" }) {
   const cls = size === "lg" ? "h-14 w-14 text-xl" : size === "sm" ? "h-8 w-8 text-xs" : "h-11 w-11 text-base";
   const tone = TONES[[...p.id].reduce((a, c) => a + c.charCodeAt(0), 0) % TONES.length];
   const initial = [...p.nickname.trim()][0]?.toUpperCase() ?? "?";
   return (
-    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-full font-semibold ${tone} ${cls}`}>
+    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-full font-semibold text-white ${cls}`} style={{ background: tone }}>
       {initial}
     </span>
   );

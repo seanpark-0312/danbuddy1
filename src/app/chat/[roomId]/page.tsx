@@ -420,7 +420,7 @@ export default function ChatRoom() {
         </div>
       )}
       <section
-        className={`flex min-h-0 touch-pan-y flex-col overflow-hidden bg-white sm:rounded-xl sm:border sm:border-slate-200 ${dragX ? "" : "transition-transform duration-200"}`}
+        className={`flex min-h-0 touch-pan-y flex-col overflow-hidden bg-white sm:rounded-[22px] sm:shadow-[0_1px_0_rgba(15,23,42,0.04),0_8px_24px_rgba(15,23,42,0.06)] ${dragX ? "" : "transition-transform duration-200"}`}
         style={dragX ? { transform: `translateX(${Math.round(dragX * 0.5)}px)` } : undefined}
         onTouchStart={onSwipeStart}
         onTouchMove={onSwipeMove}
@@ -454,7 +454,7 @@ export default function ChatRoom() {
             </p>
           </div>
           <button
-            className={`btn px-3 py-2 ${friend === "friends" ? "bg-rose-50 text-rose-600" : "btn-ghost"}`}
+            className={`btn h-10 min-w-11 rounded-[13px] px-3 ${friend === "friends" ? "bg-[#fff1f4] text-[#f0507a]" : "btn-ghost"}`}
             onClick={requestFriend}
             disabled={friend !== "none" || (!isAi && (!partnerHere || partnerLeft))}
             aria-label={friend === "friends" ? tr("친구", "Friends") : friend === "sent" ? tr("친구 신청 보냄", "Friend request sent") : tr("친구 추가", "Add friend")}
@@ -467,7 +467,7 @@ export default function ChatRoom() {
           </button>
           {(!isAi || aiVideo.state === "off") && (
             <button
-              className="btn-primary px-3 py-2"
+              className="btn-primary h-10 min-w-11 rounded-[13px] px-3"
               onClick={() => setShowVideoRules(true)}
               disabled={isAi ? aiVideo.state !== "off" : !partnerHere || video.state !== "off"}
               title={tr("화상 대화 요청", "Request video")}
@@ -476,6 +476,8 @@ export default function ChatRoom() {
             </button>
           )}
         </div>
+
+        <div aria-hidden className="grad-line h-[3px] shrink-0" />
 
         {/* video area */}
         {videoActive && (
@@ -617,8 +619,8 @@ export default function ChatRoom() {
         )}
 
         {/* messages */}
-        <div className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4" role="log" aria-live="polite">
-          <div className="mx-auto max-w-md rounded-lg bg-slate-50 px-3 py-2 text-center text-xs text-slate-500">
+        <div className="flex-1 space-y-3 overflow-y-auto overscroll-contain bg-gradient-to-b from-[#fbfcfe] to-[#f5f8fc] px-4 py-4" role="log" aria-live="polite">
+          <div className="mx-auto max-w-md rounded-[14px] border border-[#e8eef6] bg-white px-3 py-2.5 text-center text-[12.5px] leading-normal text-slate-500">
             {isAi
               ? tr("AI 연습 버디와의 대화예요. 실제 사람이 아니에요.", "This is an AI practice buddy, not a real person.")
               : tr(
@@ -626,7 +628,7 @@ export default function ChatRoom() {
                   "Messages are not stored on a server. Be careful sharing personal info (phone, address).",
                 )}
             {shared.length > 0 && (
-              <span className="mt-1 block text-brand-700">
+              <span className="mt-0.5 block font-semibold text-brand-600">
                 {tr("공통 관심사", "In common")}: {shared.map(labels.interest).join(", ")}
               </span>
             )}
@@ -658,8 +660,8 @@ export default function ChatRoom() {
                   )}
                   {m.text && (
                     <p
-                      className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed ${
-                        mine ? "rounded-br-md bg-brand-600 text-white" : "rounded-bl-md bg-slate-100 text-slate-900"
+                      className={`whitespace-pre-wrap break-words rounded-[20px] px-4 py-2.5 text-[15px] leading-normal ${
+                        mine ? "rounded-br-md bg-[#dbe8f8] text-[#0b2447]" : "rounded-bl-md border border-[#e8eef6] bg-white text-slate-900"
                       }`}
                     >
                       {m.text}
@@ -732,7 +734,7 @@ export default function ChatRoom() {
               name="message"
               aria-label={tr("메시지를 입력하세요", "Type a message")}
               autoComplete="off"
-              className="input max-h-32 min-h-11 flex-1 resize-none"
+              className="chat-input max-h-32 min-h-11 flex-1 resize-none rounded-[22px] bg-[#f1f5f9] px-4 py-2.5 text-[15px] outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-brand-100 focus-visible:outline-none"
               rows={1}
               value={draft}
               disabled={partnerLeft}
@@ -745,8 +747,15 @@ export default function ChatRoom() {
                 }
               }}
             />
-            <button className="btn-primary h-11" disabled={(!draft.trim() && !photo) || partnerLeft}>
-              {tr("전송", "Send")}
+            <button
+              className="grad-orb grid h-11 w-11 shrink-0 place-items-center rounded-full text-white transition active:scale-95 disabled:opacity-40"
+              disabled={(!draft.trim() && !photo) || partnerLeft}
+              aria-label={tr("전송", "Send")}
+              title={tr("전송", "Send")}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
             </button>
           </div>
           <div className="mt-2 flex items-center gap-3 text-xs">

@@ -109,8 +109,8 @@ export function AttachButton({ disabled, onPhoto, onError }: { disabled?: boolea
         aria-label={tr("사진 보내기", "Send a photo")}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`grid h-11 w-11 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-40 ${
-          open ? "bg-brand-50 text-brand-700" : "bg-white"
+        className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-40 ${
+          open ? "bg-brand-50 text-brand-700" : "bg-[#f1f5f9] text-slate-700"
         }`}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden className={`transition ${open ? "rotate-45" : ""}`}>
