@@ -8,6 +8,7 @@ import { useVideoCall } from "@/lib/useVideoCall";
 import { sharedInterests } from "@/lib/matching";
 import type { ChatMessage, Profile } from "@/lib/types";
 import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
+import { AiBuddyScreen, speak, useAiVideo } from "@/components/AiVideo";
 
 interface Topic {
   topic: string;
@@ -135,6 +136,27 @@ export default function ChatRoom() {
 
   const video = useVideoCall(channel, me?.id ?? "", addSystem);
 
+  // video call with the AI practice buddy (pre-generated clips + browser voice)
+  const aiVideo = useAiVideo(addSystem);
+  const aiVideoOn = useRef(false);
+  aiVideoOn.current = aiVideo.state === "on";
+  const [aiTalking, setAiTalking] = useState(false);
+  const [aiCaption, setAiCaption] = useState<string | null>(null);
+  const [voiceOn, setVoiceOn] = useState(true);
+  const voiceOnRef = useRef(voiceOn);
+  voiceOnRef.current = voiceOn;
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
+
+  function stopAiVideo(announce = true) {
+    if (aiVideo.state === "off") return;
+    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    aiVideo.stop();
+    setAiTalking(false);
+    setAiCaption(null);
+    if (announce) addSystem("video-ended");
+  }
+
   // subscribe after every handler (chat + video) is registered
   useEffect(() => {
     if (!channel || !me) return;
@@ -174,7 +196,7 @@ export default function ChatRoom() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAi, me]);
 
-  async function askAiBuddy(history: ChatMessage[]) {
+  async function askAiBuddy(history: ChatMessage[], event?: "video-on") {
     if (!me) return;
     setAiThinking(true);
     try {
@@ -182,6 +204,7 @@ export default function ChatRoom() {
         method: "POST",
         body: JSON.stringify({
           me,
+          event,
           history: history
             .filter((m) => m.from !== "system")
             .map((m) => ({ role: m.from === me.id ? "user" : "assistant", content: m.text })),
@@ -189,6 +212,13 @@ export default function ChatRoom() {
       });
       const data = await res.json();
       setMessages((prev) => [...prev, { id: crypto.randomUUID(), from: "ai", text: data.text, ts: Date.now() }]);
+      setAiThinking(false);
+      if (aiVideoOn.current) {
+        setAiCaption(data.text);
+        setAiTalking(true);
+        await speak(data.text, voiceOnRef.current);
+        setAiTalking(false);
+      }
     } finally {
       setAiThinking(false);
     }
@@ -285,6 +315,7 @@ export default function ChatRoom() {
 
   function leave() {
     if (video.state !== "off") video.end();
+    stopAiVideo(false);
     router.push("/lobby");
   }
 
@@ -329,11 +360,11 @@ export default function ChatRoom() {
               {partner.country}
             </p>
           </div>
-          {!isAi && (
+          {(!isAi || aiVideo.state === "off") && (
             <button
               className="btn-primary px-3 py-2"
               onClick={() => setShowVideoRules(true)}
-              disabled={!partnerHere || video.state !== "off"}
+              disabled={isAi ? aiVideo.state !== "off" : !partnerHere || video.state !== "off"}
               title={tr("화상 대화 요청", "Request video")}
             >
               <VideoIcon /> <span className="hidden sm:inline">{tr("화상 전환", "Video")}</span>
@@ -370,6 +401,53 @@ export default function ChatRoom() {
                 {video.camOn ? tr("카메라 끄기", "Camera off") : tr("카메라 켜기", "Camera on")}
               </button>
               <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={video.end}>
+                {tr("텍스트로 돌아가기", "Back to text")}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* AI practice buddy video */}
+        {isAi && aiVideo.state !== "off" && (
+          <div className="relative bg-slate-900">
+            <div className="aspect-video max-h-[45vh] w-full">
+              <AiBuddyScreen
+                name={partner.id === "ai-emma" ? "emma" : "minjun"}
+                displayName={partner.id === "ai-emma" ? "Emma" : "Minjun"}
+                state={aiVideo.state}
+                talking={aiTalking}
+                caption={aiCaption}
+                label={tr("AI 연습 버디 · AI 생성 영상", "AI practice buddy · AI-generated video")}
+                connectingText={
+                  aiVideo.state === "camera"
+                    ? tr("카메라를 켜는 중…", "Turning on your camera…")
+                    : tr("{name} 님이 카메라를 켜는 중…", "{name} is turning on the camera…", { name: partner.id === "ai-emma" ? "Emma" : "Minjun" })
+                }
+              />
+            </div>
+            {aiVideo.localStream && (
+              <VideoEl
+                stream={aiVideo.localStream}
+                label={tr("내 화면", "Your video")}
+                muted
+                className={`absolute bottom-3 right-3 w-28 -scale-x-100 rounded-lg border-2 border-white/70 object-cover sm:w-40 ${aiVideo.camOn ? "" : "opacity-0"}`}
+              />
+            )}
+            <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+              <button className="btn bg-white/90 px-3 py-1.5 text-slate-800" aria-pressed={!aiVideo.camOn} onClick={aiVideo.toggleCam}>
+                {aiVideo.camOn ? tr("카메라 끄기", "Camera off") : tr("카메라 켜기", "Camera on")}
+              </button>
+              <button
+                className="btn bg-white/90 px-3 py-1.5 text-slate-800"
+                aria-pressed={voiceOn}
+                onClick={() => {
+                  if (voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+                  setVoiceOn(!voiceOn);
+                }}
+              >
+                {voiceOn ? tr("음성 끄기", "Voice off") : tr("음성 켜기", "Voice on")}
+              </button>
+              <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={() => stopAiVideo()}>
                 {tr("텍스트로 돌아가기", "Back to text")}
               </button>
             </div>
@@ -587,12 +665,22 @@ export default function ChatRoom() {
       {showVideoRules && (
         <div className="fixed inset-0 z-40 grid place-items-center overscroll-contain bg-slate-900/40 p-4">
           <div role="dialog" aria-modal="true" className="card w-full max-w-sm p-6 shadow-xl">
-            <p className="text-lg font-semibold">{tr("화상 대화를 요청할까요?", "Request a video call?")}</p>
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
-              <li>{tr("상대가 수락해야만 화상이 시작돼요.", "Video starts only if your buddy accepts.")}</li>
-              <li>{tr("영상은 서로의 브라우저 사이에서 직접 전송되고 녹화·저장되지 않아요.", "Video goes directly between your browsers and is never recorded.")}</li>
-              <li>{tr("불편하면 언제든 '텍스트로 돌아가기'를 누르세요.", "Feel uncomfortable? Press 'Back to text' anytime.")}</li>
-            </ul>
+            <p className="text-lg font-semibold">
+              {isAi ? tr("{name} 님과 화상 대화를 할까요?", "Video chat with {name}?", { name: partner.id === "ai-emma" ? "Emma" : "Minjun" }) : tr("화상 대화를 요청할까요?", "Request a video call?")}
+            </p>
+            {isAi ? (
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
+                <li>{tr("내 카메라를 켜면 AI 버디도 카메라를 켜요.", "Turn on your camera and the AI buddy turns on theirs too.")}</li>
+                <li>{tr("AI 버디의 영상은 AI로 만든 영상이에요. 실제 사람이 아니에요.", "The buddy's video is AI-generated. It is not a real person.")}</li>
+                <li>{tr("내 영상은 이 브라우저에서만 보이고 전송·녹화되지 않아요.", "Your video stays in this browser. It is never sent or recorded.")}</li>
+              </ul>
+            ) : (
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
+                <li>{tr("상대가 수락해야만 화상이 시작돼요.", "Video starts only if your buddy accepts.")}</li>
+                <li>{tr("영상은 서로의 브라우저 사이에서 직접 전송되고 녹화·저장되지 않아요.", "Video goes directly between your browsers and is never recorded.")}</li>
+                <li>{tr("불편하면 언제든 '텍스트로 돌아가기'를 누르세요.", "Feel uncomfortable? Press 'Back to text' anytime.")}</li>
+              </ul>
+            )}
             <div className="mt-5 grid grid-cols-2 gap-2">
               <button className="btn-ghost" onClick={() => setShowVideoRules(false)}>
                 {tr("취소", "Cancel")}
@@ -601,10 +689,11 @@ export default function ChatRoom() {
                 className="btn-primary"
                 onClick={() => {
                   setShowVideoRules(false);
-                  video.request();
+                  if (isAi) aiVideo.start(() => askAiBuddy(messagesRef.current, "video-on"));
+                  else video.request();
                 }}
               >
-                {tr("요청 보내기", "Send request")}
+                {isAi ? tr("내 카메라 켜기", "Turn on my camera") : tr("요청 보내기", "Send request")}
               </button>
             </div>
           </div>
