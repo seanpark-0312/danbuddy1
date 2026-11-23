@@ -20,8 +20,13 @@ body {
   background: #f7f9fc;
   color: #0f172a;
   font-family: var(--font-sans);
-  word-break: keep-all;
   overflow-wrap: anywhere;
+}
+
+/* Korean wraps between words; Japanese and Chinese wrap anywhere. */
+html:lang(ko) body,
+html:lang(en) body {
+  word-break: keep-all;
 }
 
 @utility card {

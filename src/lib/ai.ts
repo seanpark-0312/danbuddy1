@@ -1,5 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 
+export const LANG_NAMES: Record<string, string> = {
+  ko: "Korean",
+  en: "English",
+  ja: "Japanese",
+  zh: "Simplified Chinese",
+  vi: "Vietnamese",
+};
+
 const MODEL = process.env.AI_MODEL || "claude-opus-5-5";
 
 let client: Anthropic | null | undefined;

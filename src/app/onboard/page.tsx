@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLang, useT } from "@/lib/i18n";
+import { pickLabel, useLang, useT, type Lang } from "@/lib/i18n";
 import { getSessionId, loadProfile, saveProfile } from "@/lib/profile";
 import { AVATARS, GOALS, INTERESTS, LEVELS, type Level, type Profile, type Role } from "@/lib/types";
 
@@ -122,7 +122,7 @@ export default function Onboard() {
                 onClick={() => toggle("goals", g.key)}
                 className={`chip ${p.goals.includes(g.key) ? "border-brand-600 bg-brand-600 text-white" : "border-slate-300 bg-white text-slate-700"}`}
               >
-                {lang === "ko" ? g.ko : g.en}
+                {pickLabel(g, lang)}
               </button>
             ))}
           </div>
@@ -138,7 +138,7 @@ export default function Onboard() {
                 onClick={() => toggle("interests", i.key)}
                 className={`chip ${p.interests.includes(i.key) ? "border-brand-500 bg-brand-50 text-brand-700" : "border-slate-300 bg-white text-slate-700"}`}
               >
-                {lang === "ko" ? i.ko : i.en}
+                {pickLabel(i, lang)}
               </button>
             ))}
           </div>
@@ -168,14 +168,14 @@ export default function Onboard() {
   );
 }
 
-function LevelSelect({ label, value, onChange, lang }: { label: string; value: Level; onChange: (v: Level) => void; lang: string }) {
+function LevelSelect({ label, value, onChange, lang }: { label: string; value: Level; onChange: (v: Level) => void; lang: Lang }) {
   return (
     <label className="space-y-1.5">
       <span className="text-sm font-medium">{label}</span>
       <select className="input" value={value} onChange={(e) => onChange(e.target.value as Level)}>
         {LEVELS.map((l) => (
           <option key={l.key} value={l.key}>
-            {lang === "ko" ? l.ko : l.en}
+            {pickLabel(l, lang)}
           </option>
         ))}
       </select>

@@ -1,10 +1,11 @@
 "use client";
-import { useLang } from "@/lib/i18n";
+import { pickLabel, useLang, useT } from "@/lib/i18n";
 import { GOALS, INTERESTS, LEVELS, type Profile } from "@/lib/types";
 
 export function useLabels() {
   const { lang } = useLang();
-  const pick = (x: { ko: string; en: string }) => (lang === "ko" ? x.ko : x.en);
+  const tr = useT();
+  const pick = (x: { ko: string; en: string; ja?: string; zh?: string }) => pickLabel(x, lang);
   return {
     interest: (k: string) => {
       const i = INTERESTS.find((x) => x.key === k);
@@ -19,7 +20,7 @@ export function useLabels() {
       return l ? pick(l) : k;
     },
     role: (p: Profile) =>
-      p.role === "korean" ? (lang === "ko" ? "한국 학생" : "Korean student") : lang === "ko" ? "유학생" : "International student",
+      p.role === "korean" ? tr("한국 학생", "Korean student") : tr("유학생", "International student"),
   };
 }
 

@@ -248,7 +248,7 @@ export default function Lobby() {
               <h1 className="text-xl font-bold text-brand-900">{tr("지금 접속 중인 버디", "Buddies online now")}</h1>
               <p className="text-sm text-slate-500">
                 {others.length
-                  ? tr(`${others.length}명 · 잘 맞는 순서로 정렬했어요`, `${others.length} online · sorted by fit`)
+                  ? tr("{n}명 · 잘 맞는 순서로 정렬했어요", "{n} online · sorted by fit", { n: others.length })
                   : tr("아직 접속한 사람이 없어요", "No one is online yet")}
               </p>
             </div>
@@ -335,7 +335,7 @@ export default function Lobby() {
       {pendingTo && status !== "searching" && (
         <Modal>
           <p className="text-lg font-semibold">
-            {tr(`${pendingProfile?.nickname ?? "상대"} 님의 수락을 기다리는 중…`, `Waiting for ${pendingProfile?.nickname ?? "them"} to accept…`)}
+            {tr("{name} 님의 수락을 기다리는 중…", "Waiting for {name} to accept…", { name: pendingProfile?.nickname ?? "" })}
           </p>
           <button className="btn-ghost mt-5 w-full" onClick={cancelRequest}>
             {tr("신청 취소", "Cancel")}
@@ -349,7 +349,7 @@ export default function Lobby() {
             <Avatar p={incoming.from} size="lg" />
             <div>
               <p className="text-lg font-semibold">
-                {tr(`${incoming.from.nickname} 님의 대화 신청`, `${incoming.from.nickname} wants to chat`)}
+                {tr("{name} 님의 대화 신청", "{name} wants to chat", { name: incoming.from.nickname })}
               </p>
               <p className="text-sm text-slate-500">
                 {labels.role(incoming.from)} · {incoming.from.country} · {tr("궁합", "fit")} {matchScore(me, incoming.from)}

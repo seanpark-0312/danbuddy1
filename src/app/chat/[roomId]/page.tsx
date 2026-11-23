@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useLang, useT } from "@/lib/i18n";
+import { LANGS, useLang, useT } from "@/lib/i18n";
 import { block, getPartner, hasSessionProfile, loadProfile } from "@/lib/profile";
 import { openChannel, type RTChannel } from "@/lib/realtime";
 import { useVideoCall } from "@/lib/useVideoCall";
@@ -369,7 +369,7 @@ export default function ChatRoom() {
           <div className="flex flex-wrap items-center gap-3 border-b border-brand-100 bg-brand-50 px-4 py-3 text-sm">
             <VideoIcon />
             <span className="flex-1 text-brand-900">
-              {tr(`${partner.nickname} 님이 화상 대화를 요청했어요. 수락하면 카메라·마이크가 켜져요.`, `${partner.nickname} wants to switch to video. Accepting turns on your camera and mic.`)}
+              {tr("{name} 님이 화상 대화를 요청했어요. 수락하면 카메라·마이크가 켜져요.", "{name} wants to switch to video. Accepting turns on your camera and mic.", { name: partner.nickname })}
             </span>
             <button className="btn-ghost px-3 py-1.5" onClick={video.decline}>
               {tr("거절", "Decline")}
@@ -436,7 +436,7 @@ export default function ChatRoom() {
                     className={`mt-0.5 text-[11px] text-slate-400 hover:text-brand-600 ${mine ? "self-end" : "self-start"}`}
                   >
                     {tl?.text ? tr("번역 숨기기", "Hide translation") : tr("번역", "Translate")} ·{" "}
-                    {new Date(m.ts).toLocaleTimeString(lang === "ko" ? "ko-KR" : "en-US", { hour: "numeric", minute: "2-digit" })}
+                    {new Date(m.ts).toLocaleTimeString(LANGS.find((l) => l.key === lang)?.locale, { hour: "numeric", minute: "2-digit" })}
                   </button>
                 </div>
               </div>
