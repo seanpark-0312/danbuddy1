@@ -470,4 +470,5 @@ export const MORE: Record<string, [string, string, string, string, string]> = {
   "Remove from friends?": ["¿Eliminar de tus amigos?", "Retirer de vos amis ?", "Aus Freunden entfernen?", "Удалить из друзей?", "Достардан жоясыз ба?"],
   "No friends match.": ["Ningún amigo coincide.", "Aucun ami ne correspond.", "Keine passenden Freunde.", "Нет подходящих друзей.", "Сәйкес дос табылмады."],
   "Manage": ["Gestionar", "Gérer", "Verwalten", "Управлять", "Басқару"],
+  "Open another window with the other role and it will show up here. Meanwhile, chat with an AI buddy.": ["Abre otra ventana con el otro rol y aparecerá aquí. Mientras tanto, chatea con un compañero IA.", "Ouvrez une autre fenêtre avec l’autre rôle et la personne apparaîtra ici. En attendant, discutez avec un binôme IA.", "Öffne ein weiteres Fenster mit der anderen Rolle, dann erscheint sie hier. Chatte so lange mit einem KI-Buddy.", "Откройте другое окно с другой ролью, и человек появится здесь. А пока пообщайтесь с ИИ-собеседником.", "Басқа терезеде қарсы рөлмен кірсеңіз, осында шығады. Әзірге ЖИ серігімен сөйлесіп көріңіз."],
 };

@@ -58,7 +58,7 @@ export default function Onboard() {
       return;
     }
     saveProfile({ ...p, nickname: p.nickname.trim(), id: getSessionId() });
-    router.push(editing ? "/profile" : "/lobby");
+    router.push("/lobby");
   }
 
   if (!loaded) return null;

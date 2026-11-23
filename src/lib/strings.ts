@@ -203,4 +203,5 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "Remove from friends?": { ja: "友だちから削除しますか？", zh: "要删除该好友吗？" },
   "No friends match.": { ja: "該当する友だちがいません。", zh: "没有匹配的好友。" },
   "Manage": { ja: "管理", zh: "管理" },
+  "Open another window with the other role and it will show up here. Meanwhile, chat with an AI buddy.": { ja: "別のウィンドウで反対の役割のプロフィールで入るとここに表示されます。その間にAIバディと話してみましょう。", zh: "在另一个窗口用相反角色的资料登录，就会显示在这里。在此期间，可以先和 AI 伙伴聊聊。" },
 };

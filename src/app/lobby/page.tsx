@@ -8,7 +8,7 @@ import { isDemoMode, openChannel, type RTChannel } from "@/lib/realtime";
 import { matchScore, sharedInterests } from "@/lib/matching";
 import type { Friend, Profile } from "@/lib/types";
 import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
-import { AI_BUDDIES, INTERNATIONAL_BUDDIES, buddyById } from "@/lib/aiBuddies";
+import { AI_BUDDIES, INTERNATIONAL_BUDDIES, buddyById, type BuddyKey } from "@/lib/aiBuddies";
 
 type Status = "idle" | "searching" | "busy";
 interface Presence {
@@ -197,6 +197,9 @@ export default function Lobby() {
   }
 
   if (!me) return null;
+  // all AI buddies are always available; the ones that fit my role come first
+  const aiOrder: BuddyKey[] = me.role === "korean" ? [...INTERNATIONAL_BUDDIES, "minjun"] : ["minjun", ...INTERNATIONAL_BUDDIES];
+  const openAi = (k: BuddyKey) => router.push(`/chat/ai-${k}-${crypto.randomUUID().slice(0, 8)}`);
   const friendUids = new Set(friends.map((f) => f.uid));
   const pendingProfile = others.find((o) => o.profile.id === pendingTo)?.profile;
 
@@ -327,39 +330,6 @@ export default function Lobby() {
             )}
           </div>
 
-          <div className="card space-y-3 p-5">
-            <h2 className="font-semibold">{tr("AI 연습 버디", "AI practice buddy")}</h2>
-            <p className="text-sm text-slate-600">
-              {tr(
-                "접속한 사람이 없을 때, AI 버디와 먼저 대화를 연습해 보세요.",
-                "No one online? Warm up by chatting with an AI buddy first.",
-              )}
-            </p>
-            <ul className="space-y-2">
-              {(me.role === "korean" ? INTERNATIONAL_BUDDIES : (["minjun"] as const)).map((k) => {
-                const b = AI_BUDDIES[k];
-                return (
-                  <li key={k}>
-                    <button
-                      className="flex w-full items-center gap-3 rounded-xl border border-slate-200 px-3 py-2.5 text-left transition hover:border-brand-500 hover:bg-brand-50"
-                      onClick={() => router.push(`/chat/ai-${k}-${crypto.randomUUID().slice(0, 8)}`)}
-                    >
-                      <span className="text-2xl leading-none" aria-hidden>
-                        {b.flag}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-semibold">{b.name}</span>
-                        <span className="block truncate text-xs text-slate-500">
-                          {b.profile.country} · {b.profile.major}
-                        </span>
-                      </span>
-                      <span className="text-xs font-semibold text-brand-600">{tr("대화하기", "Chat")}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
         </aside>
 
         <section>
@@ -382,18 +352,15 @@ export default function Lobby() {
             </p>
           )}
 
-          {ranked.length === 0 ? (
-            <div className="card grid place-items-center p-12 text-center">
-              <p className="font-medium">{tr("버디를 기다리는 중이에요", "Waiting for buddies")}</p>
-              <p className="mt-1 max-w-sm text-sm text-slate-500">
-                {tr(
-                  "다른 창에서 반대 역할의 프로필로 접속하면 여기에 나타나요. 그 사이 AI 연습 버디와 대화해 보세요.",
-                  "Open another window with the other role and it will show up here. Meanwhile, try the AI practice buddy.",
-                )}
-              </p>
-            </div>
-          ) : (
-            <ul className="grid gap-3 md:grid-cols-2">
+          {ranked.length === 0 && (
+            <p className="mb-3 rounded-lg border border-dashed border-slate-300 px-4 py-3 text-sm text-slate-500">
+              {tr(
+                "다른 창에서 반대 역할의 프로필로 접속하면 여기에 나타나요. 그 사이 AI 버디와 대화해 보세요.",
+                "Open another window with the other role and it will show up here. Meanwhile, chat with an AI buddy.",
+              )}
+            </p>
+          )}
+          <ul className="grid gap-3 md:grid-cols-2">
               {ranked.map(({ profile: o, status: st, score }) => {
                 const pick = ai[o.id];
                 const shared = sharedInterests(me, o);
@@ -450,8 +417,55 @@ export default function Lobby() {
                   </li>
                 );
               })}
-            </ul>
-          )}
+            {aiOrder.map((k) => {
+              const o = AI_BUDDIES[k].profile;
+              const shared = sharedInterests(me, o);
+              return (
+                <li key={o.id} className="card card-hover flex flex-col p-4">
+                  <div className="flex items-start gap-3">
+                    <Avatar p={o} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <p className="font-semibold">
+                          <span aria-hidden>{AI_BUDDIES[k].flag} </span>
+                          {o.nickname}
+                        </p>
+                        <RoleBadge p={o} />
+                        {friendUids.has(o.id) && (
+                          <span className="rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">{tr("친구", "Friend")}</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        {o.country}
+                        {o.major ? ` · ${o.major}` : ""} · KO {labels.level(o.koreanLevel)} · EN {labels.level(o.englishLevel)}
+                      </p>
+                    </div>
+                    <span className="text-right">
+                      <span className="block text-lg font-bold leading-none tabular-nums text-brand-600">{matchScore(me, o)}</span>
+                      <span className="text-[10px] text-slate-400">{tr("궁합", "fit")}</span>
+                    </span>
+                  </div>
+                  {o.intro && <p className="mt-3 text-sm text-slate-700">“{o.intro}”</p>}
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {o.interests.map((i) => (
+                      <span key={i} className={`rounded px-1.5 py-0.5 text-xs ${shared.includes(i) ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
+                        {labels.interest(i)}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      {tr("AI · 언제든 대화 가능", "AI · always available")}
+                    </span>
+                    <button className="btn-primary px-3 py-1.5" onClick={() => openAi(k)}>
+                      {tr("대화하기", "Chat")}
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       </div>
 
