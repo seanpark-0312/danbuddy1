@@ -2,7 +2,8 @@ export type Role = "korean" | "international";
 export type Level = "none" | "basic" | "conversational" | "fluent" | "native";
 
 export interface Profile {
-  id: string;
+  id: string; // changes per browser tab
+  uid?: string; // stays the same on this device, used for friends
   nickname: string;
   avatar: string;
   role: Role;
@@ -13,6 +14,13 @@ export interface Profile {
   interests: string[];
   goals: string[];
   intro: string;
+}
+
+export interface Friend {
+  uid: string;
+  profile: Profile;
+  since: number;
+  ai?: boolean;
 }
 
 export interface ChatMessage {

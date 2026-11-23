@@ -9,6 +9,11 @@ interface Intent {
 
 const INTENTS: Intent[] = [
   {
+    keys: /\(added you as a friend\)/i,
+    emma: ["Yay, we're friends now! 🥰 친구! Let's keep chatting, okay?", "Oh this makes me so happy! 친구 ☺️ Text me anytime!"],
+    minjun: { ko: ["와, 친구 추가 고마워요! 🙌 앞으로 자주 얘기해요!"], en: ["Thanks for the friend add! 🙌 Let's talk often!"] },
+  },
+  {
     keys: /\(sent a photo\)/i,
     emma: ["Wow, nice photo! 📸 Where did you take this?", "Oh I love this! 😍 Is this near campus?"],
     minjun: { ko: ["오 사진 좋네요! 📸 어디서 찍었어요?"], en: ["Nice photo! 📸 Where was this taken?"] },

@@ -41,7 +41,7 @@ export function RoleBadge({ p }: { p: Profile }) {
   const l = useLabels();
   return (
     <span
-      className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${
+      className={`shrink-0 whitespace-nowrap rounded px-1.5 py-0.5 text-[11px] font-semibold ${
         p.role === "korean" ? "bg-brand-50 text-brand-700" : "bg-slate-100 text-slate-700"
       }`}
     >

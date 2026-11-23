@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { LANGS, useLang, useT } from "@/lib/i18n";
-import { block, getPartner, hasSessionProfile, loadProfile } from "@/lib/profile";
+import { addFriend, block, clearLog, getPartner, hasSessionProfile, isFriend, loadLog, loadProfile, saveLog } from "@/lib/profile";
 import { openChannel, type RTChannel } from "@/lib/realtime";
 import { useVideoCall } from "@/lib/useVideoCall";
 import { sharedInterests } from "@/lib/matching";
@@ -24,8 +24,9 @@ interface Translation {
   loading?: boolean;
 }
 
-function aiPartnerFor(me: Profile): Profile {
-  return me.role === "korean"
+function aiPartnerFor(me: Profile, roomId: string): Profile {
+  const emma = roomId.startsWith("ai-emma") ? true : roomId.startsWith("ai-minjun") ? false : me.role === "korean";
+  return emma
     ? {
         id: "ai-emma",
         nickname: "Emma (AI)",
@@ -84,6 +85,10 @@ export default function ChatRoom() {
   const markAiHelloDone = useCallback(() => setAiHelloDone(true), []);
   const [confirmEnd, setConfirmEnd] = useState<"ai" | "human" | "leave" | null>(null);
   const [channel, setChannel] = useState<RTChannel | null>(null);
+  const [friend, setFriend] = useState<"none" | "sent" | "incoming" | "friends">("none");
+  const friendRef = useRef(friend);
+  friendRef.current = friend;
+  const restored = useRef(false);
   const seenPartner = useRef(false);
   const lastTypingSent = useRef(0);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -101,11 +106,25 @@ export default function ChatRoom() {
     }
     const p = loadProfile()!;
     setMe(p);
+    // the chat stays until you leave the room (refresh, video on/off, small window)
+    const log = loadLog(roomId);
+    if (log.length) {
+      restored.current = true;
+      setMessages(log);
+    }
     if (isAi) {
-      setPartnerState(aiPartnerFor(p));
+      setPartnerState(aiPartnerFor(p, roomId));
       setPartnerHere(true);
     } else setPartnerState(getPartner(roomId));
   }, [roomId, isAi, router]);
+
+  useEffect(() => {
+    if (me && messages.length) saveLog(roomId, messages);
+  }, [me, roomId, messages]);
+
+  useEffect(() => {
+    if (me && partner) setFriend((f) => (isFriend(me.uid, partner) ? "friends" : f === "friends" ? "none" : f));
+  }, [me, partner]);
 
   // realtime room
   useEffect(() => {
@@ -125,25 +144,47 @@ export default function ChatRoom() {
       setPartnerLeft(true);
       setPartnerHere(false);
     });
+    c.on("friend-req", ({ from }: { from: Profile }) => {
+      if (isFriend(me.uid, from)) {
+        c.send("friend-ok", { from: me });
+        return;
+      }
+      setPartnerState(from);
+      setFriend((f) => (f === "sent" ? f : "incoming"));
+    });
+    c.on("friend-ok", ({ from }: { from: Profile }) => {
+      addFriend(me.uid, from);
+      setPartnerState(from);
+      if (friendRef.current !== "friends") addSystem("friend-added");
+      setFriend("friends");
+    });
+    c.on("friend-no", () => {
+      setFriend("none");
+      addSystem("friend-declined");
+    });
+    // a refresh drops out of the room for a moment, so wait a little before saying the buddy left
+    let goneTimer: ReturnType<typeof setTimeout> | null = null;
     c.onPresence((list: { profile: Profile }[]) => {
       const other = list.find((s) => s?.profile && s.profile.id !== me.id);
       if (other) {
+        if (goneTimer) clearTimeout(goneTimer);
+        goneTimer = null;
         seenPartner.current = true;
         setPartnerState(other.profile);
         setPartnerHere(true);
         setPartnerLeft(false);
-      } else if (seenPartner.current) {
+      } else if (seenPartner.current && !goneTimer) {
         setPartnerHere(false);
-        setPartnerLeft(true);
+        goneTimer = setTimeout(() => setPartnerLeft(true), 8000);
       }
     });
     setChannel(c);
     return () => {
-      c.send("bye", {});
+      if (goneTimer) clearTimeout(goneTimer);
       c.close();
       setChannel(null);
     };
-  }, [me, roomId, isAi]);
+  }, [me, roomId, isAi, addSystem]);
 
   const video = useVideoCall(channel, me?.id ?? "", addSystem);
 
@@ -178,7 +219,7 @@ export default function ChatRoom() {
 
   useEffect(() => {
     if (partnerLeft) {
-      addSystem("partner-left");
+      if (messagesRef.current[messagesRef.current.length - 1]?.text !== "partner-left") addSystem("partner-left");
       if (video.state !== "off") video.end();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -205,11 +246,12 @@ export default function ChatRoom() {
   useEffect(() => {
     if (!isAi || !me || greeted.current) return;
     greeted.current = true;
+    if (restored.current) return;
     askAiBuddy([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAi, me]);
 
-  async function askAiBuddy(history: ChatMessage[], event?: "video-on") {
+  async function askAiBuddy(history: ChatMessage[], event?: "video-on" | "friend") {
     if (!me) return;
     setAiThinking(true);
     try {
@@ -342,7 +384,35 @@ export default function ChatRoom() {
   function leave() {
     if (video.state !== "off") video.end();
     stopAiVideo(false);
+    channel?.send("bye", {});
+    clearLog(roomId);
     router.push("/lobby");
+  }
+
+  function requestFriend() {
+    if (!me || !partner) return;
+    if (isAi) {
+      addFriend(me.uid, partner, true);
+      setFriend("friends");
+      addSystem("friend-added");
+      askAiBuddy(messagesRef.current, "friend");
+      return;
+    }
+    setFriend("sent");
+    channel?.send("friend-req", { from: me });
+  }
+
+  function answerFriend(ok: boolean) {
+    if (!me || !partner) return;
+    if (ok) {
+      addFriend(me.uid, partner);
+      setFriend("friends");
+      addSystem("friend-added");
+      channel?.send("friend-ok", { from: me });
+    } else {
+      setFriend("none");
+      channel?.send("friend-no", {});
+    }
   }
 
   const systemText = useMemo(
@@ -353,8 +423,12 @@ export default function ChatRoom() {
         "video-ended": tr("화상 대화가 종료되었어요.", "Video call ended."),
         "video-failed": tr("화상 연결에 실패했어요. 네트워크를 확인해 주세요.", "Video connection failed. Check your network."),
         "camera-error": tr("카메라·마이크를 사용할 수 없어요. 브라우저 권한을 확인해 주세요.", "Camera or microphone is unavailable. Check browser permissions."),
+        "friend-added": tr("{name} 님과 친구가 됐어요. 로비의 '내 친구'에서 다시 대화를 신청할 수 있어요.", "You and {name} are now friends. Find them under My friends in the lobby.", {
+          name: partner?.nickname ?? "",
+        }),
+        "friend-declined": tr("상대가 친구 신청을 다음으로 미뤘어요.", "Your buddy said not now to the friend request."),
       }) as Record<string, string>,
-    [tr],
+    [tr, partner?.nickname],
   );
 
   if (!me || !partner) {
@@ -377,15 +451,31 @@ export default function ChatRoom() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
               <p className="truncate font-semibold">{partner.nickname}</p>
-              <RoleBadge p={partner} />
+              <span className="hidden min-[430px]:inline-flex">
+                <RoleBadge p={partner} />
+              </span>
             </div>
-            <p className="flex items-center gap-1.5 text-xs text-slate-500">
-              <span className={`h-1.5 w-1.5 rounded-full ${partnerHere ? "bg-emerald-500" : "bg-slate-300"}`} />
+            <p className="flex items-center gap-1.5 whitespace-nowrap text-xs text-slate-500">
+              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${partnerHere ? "bg-emerald-500" : "bg-slate-300"}`} />
               {partnerLeft ? tr("나감", "Left") : partnerHere ? tr("접속 중", "Online") : tr("상대를 기다리는 중", "Waiting for buddy")}
-              {" · "}
-              {partner.country}
+              <span className="truncate">
+                {" · "}
+                {partner.country}
+              </span>
             </p>
           </div>
+          <button
+            className={`btn px-3 py-2 ${friend === "friends" ? "bg-rose-50 text-rose-600" : "btn-ghost"}`}
+            onClick={requestFriend}
+            disabled={friend !== "none" || (!isAi && (!partnerHere || partnerLeft))}
+            aria-label={friend === "friends" ? tr("친구", "Friends") : friend === "sent" ? tr("친구 신청 보냄", "Friend request sent") : tr("친구 추가", "Add friend")}
+            title={friend === "friends" ? tr("친구", "Friends") : friend === "sent" ? tr("친구 신청 보냄", "Friend request sent") : tr("친구 추가", "Add friend")}
+          >
+            <FriendIcon done={friend === "friends"} />
+            <span className="hidden sm:inline">
+              {friend === "friends" ? tr("친구", "Friends") : friend === "sent" ? tr("신청 보냄", "Request sent") : tr("친구 추가", "Add friend")}
+            </span>
+          </button>
           {(!isAi || aiVideo.state === "off") && (
             <button
               className="btn-primary px-3 py-2"
@@ -502,6 +592,20 @@ export default function ChatRoom() {
         )}
 
         {/* banners */}
+        {friend === "incoming" && (
+          <div role="alert" className="flex flex-wrap items-center gap-3 border-b border-rose-100 bg-rose-50 px-4 py-3 text-sm">
+            <FriendIcon done={false} />
+            <span className="flex-1 text-slate-800">
+              {tr("{name} 님이 친구 신청을 보냈어요.", "{name} sent you a friend request.", { name: partner.nickname })}
+            </span>
+            <button className="btn-ghost px-3 py-1.5" onClick={() => answerFriend(false)}>
+              {tr("다음에", "Not now")}
+            </button>
+            <button className="btn-primary px-3 py-1.5" onClick={() => answerFriend(true)}>
+              {tr("수락", "Accept")}
+            </button>
+          </div>
+        )}
         {video.state === "incoming" && (
           <div role="alert" className="flex flex-wrap items-center gap-3 border-b border-brand-100 bg-brand-50 px-4 py-3 text-sm">
             <VideoIcon />
@@ -885,4 +989,18 @@ function replyDelay(text: string) {
   const t = Math.min(1, Math.max(0, (text.length - 15) / 105)); // 15 chars or less = short, 120+ = long
   const base = 3000 + t * 5000; // 3 s .. 8 s
   return base + Math.random() * 2000; // plus 0–2 s so it doesn't feel mechanical
+}
+
+function FriendIcon({ done }: { done: boolean }) {
+  return done ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.3 5 6.8 5c2 0 3.4 1.1 4.2 2.4h2C13.8 6.1 15.2 5 17.2 5c3.5 0 5.6 3.6 4.3 6.8C19.5 16.4 12 21 12 21z" />
+    </svg>
+  ) : (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="9" cy="8" r="4" />
+      <path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1" />
+      <path d="M19 8v6M16 11h6" />
+    </svg>
+  );
 }

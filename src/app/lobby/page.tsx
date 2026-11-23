@@ -3,10 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLang, useT } from "@/lib/i18n";
-import { getBlocked, hasSessionProfile, loadProfile, setPartner } from "@/lib/profile";
+import { getBlocked, getFriends, hasSessionProfile, loadProfile, removeFriend, setPartner } from "@/lib/profile";
 import { isDemoMode, openChannel, type RTChannel } from "@/lib/realtime";
 import { matchScore, sharedInterests } from "@/lib/matching";
-import type { Profile } from "@/lib/types";
+import type { Friend, Profile } from "@/lib/types";
 import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
 
 type Status = "idle" | "searching" | "busy";
@@ -40,6 +40,8 @@ export default function Lobby() {
   const [ai, setAi] = useState<Record<string, AiPick>>({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiOff, setAiOff] = useState(false);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [removing, setRemoving] = useState<string | null>(null);
   const ch = useRef<RTChannel | null>(null);
   const stateRef = useRef({ status, pendingTo, incoming });
   stateRef.current = { status, pendingTo, incoming };
@@ -49,7 +51,9 @@ export default function Lobby() {
       router.replace("/onboard");
       return;
     }
-    setMe(loadProfile());
+    const p = loadProfile();
+    setMe(p);
+    setFriends(getFriends(p?.uid));
   }, [router]);
 
   const go = useCallback(
@@ -170,7 +174,13 @@ export default function Lobby() {
     }
   }
 
+  function chatWithFriend(f: Friend, online?: Presence) {
+    if (f.ai) router.push(`/chat/ai-${f.uid === "ai-minjun" ? "minjun" : "emma"}-${crypto.randomUUID().slice(0, 8)}`);
+    else if (online) requestChat(online.profile);
+  }
+
   if (!me) return null;
+  const friendUids = new Set(friends.map((f) => f.uid));
   const pendingProfile = others.find((o) => o.profile.id === pendingTo)?.profile;
 
   return (
@@ -206,6 +216,72 @@ export default function Lobby() {
             <Link href="/onboard" className="mt-4 block text-xs text-slate-500 underline-offset-2 hover:underline">
               {tr("프로필 수정", "Edit profile")}
             </Link>
+          </div>
+
+
+          <div className="card space-y-3 p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">{tr("내 친구", "My friends")}</h2>
+              {friends.length > 0 && <span className="text-xs text-slate-500">{friends.length}</span>}
+            </div>
+            {friends.length === 0 ? (
+              <p className="text-sm text-slate-600">
+                {tr("대화방에서 '친구 추가'를 누르면 여기에 모여요. 접속해 있으면 바로 다시 대화를 신청할 수 있어요.", "Tap Add friend in a chat and they show up here. When they're online, you can say hi again right away.")}
+              </p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {friends.map((f) => {
+                  const online = f.ai ? undefined : others.find((o) => o.profile.uid === f.uid);
+                  const busy = online?.status === "busy";
+                  return (
+                    <li key={f.uid} className="flex items-center gap-3 py-2.5">
+                      <Avatar p={online?.profile ?? f.profile} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold">{(online?.profile ?? f.profile).nickname}</p>
+                        <p className="flex items-center gap-1.5 text-xs text-slate-500">
+                          <span className={`h-1.5 w-1.5 rounded-full ${f.ai || (online && !busy) ? "bg-emerald-500" : "bg-slate-300"}`} />
+                          {f.ai ? tr("AI · 언제든 대화 가능", "AI · always available") : online ? (busy ? tr("대화 중", "Busy") : tr("접속 중", "Online")) : tr("오프라인", "Offline")}
+                        </p>
+                      </div>
+                      {removing === f.uid ? (
+                        <span className="flex gap-1">
+                          <button className="btn-ghost px-2 py-1 text-xs" onClick={() => setRemoving(null)}>
+                            {tr("취소", "Cancel")}
+                          </button>
+                          <button
+                            className="btn bg-red-600 px-2 py-1 text-xs text-white"
+                            onClick={() => {
+                              removeFriend(me.uid, f.uid);
+                              setFriends(getFriends(me.uid));
+                              setRemoving(null);
+                            }}
+                          >
+                            {tr("삭제", "Remove")}
+                          </button>
+                        </span>
+                      ) : (
+                        <>
+                          <button
+                            className="btn-primary px-3 py-1.5 text-xs"
+                            disabled={!f.ai && (!online || busy || !!pendingTo)}
+                            onClick={() => chatWithFriend(f, online)}
+                          >
+                            {f.ai ? tr("대화하기", "Chat") : tr("대화 신청", "Say hi")}
+                          </button>
+                          <button
+                            className="grid h-7 w-7 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                            aria-label={tr("{name} 친구 삭제", "Remove {name}", { name: f.profile.nickname })}
+                            onClick={() => setRemoving(f.uid)}
+                          >
+                            ×
+                          </button>
+                        </>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
 
           <div className="card space-y-3 p-5">
@@ -285,6 +361,9 @@ export default function Lobby() {
                         <div className="flex items-center gap-1.5">
                           <p className="truncate font-semibold">{o.nickname}</p>
                           <RoleBadge p={o} />
+                          {o.uid && friendUids.has(o.uid) && (
+                            <span className="rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-600">{tr("친구", "Friend")}</span>
+                          )}
                         </div>
                         <p className="text-xs text-slate-500">
                           {o.country}
@@ -349,7 +428,9 @@ export default function Lobby() {
             <Avatar p={incoming.from} size="lg" />
             <div>
               <p className="text-lg font-semibold">
-                {tr("{name} 님의 대화 신청", "{name} wants to chat", { name: incoming.from.nickname })}
+                {incoming.from.uid && friendUids.has(incoming.from.uid)
+                  ? tr("친구 {name} 님의 대화 신청", "Your friend {name} wants to chat", { name: incoming.from.nickname })
+                  : tr("{name} 님의 대화 신청", "{name} wants to chat", { name: incoming.from.nickname })}
               </p>
               <p className="text-sm text-slate-500">
                 {labels.role(incoming.from)} · {incoming.from.country} · {tr("궁합", "fit")} {matchScore(me, incoming.from)}
