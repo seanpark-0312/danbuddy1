@@ -166,4 +166,5 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "Photo to send": { ja: "送る写真", zh: "要发送的照片" },
   "Remove photo": { ja: "写真を外す", zh: "移除照片" },
   "Photos go straight to your buddy and are not stored on a server.": { ja: "写真はサーバーに保存されず、相手に直接届きます。", zh: "照片不会保存在服务器上，会直接发给对方。" },
+  "AI translation isn't available right now. Please try again in a moment.": { ja: "今はAI翻訳が使えません。少ししてからもう一度お試しください。", zh: "AI 翻译暂时不可用，请稍后再试。" },
 };

@@ -75,6 +75,7 @@ export default function ChatRoom() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(false);
   const [draftBusy, setDraftBusy] = useState(false);
+  const [draftError, setDraftError] = useState<string | null>(null);
   const [showReport, setShowReport] = useState(false);
   const [showVideoRules, setShowVideoRules] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState<"ai" | "human" | null>(null);
@@ -276,6 +277,7 @@ export default function ChatRoom() {
 
   function onDraftChange(v: string) {
     setDraft(v);
+    if (draftError) setDraftError(null);
     if (!isAi && Date.now() - lastTypingSent.current > 1500) {
       lastTypingSent.current = Date.now();
       channel?.send("typing", {});
@@ -292,23 +294,29 @@ export default function ChatRoom() {
       return;
     }
     setTranslations((t) => ({ ...t, [m.id]: { text: null, loading: true } }));
-    const res = await fetch("/api/ai/translate", { method: "POST", body: JSON.stringify({ text: m.text, target: lang }) });
-    const data = await res.json();
+    const data = await translateText(m.text, lang);
     setTranslations((t) => ({
       ...t,
-      [m.id]: { text: data.text ?? tr("AI 키가 설정되지 않아 번역할 수 없어요.", "Translation needs the AI key to be configured."), tip: data.tip },
+      [m.id]: { text: data.text ?? aiErrorText(data.error), tip: data.tip },
     }));
   }
 
   /** Rewrite my draft in the partner's language (e.g. Korean → English for practice). */
+  function aiErrorText(error?: string) {
+    return error === "no-key"
+      ? tr("AI 키가 설정되지 않아 번역할 수 없어요.", "Translation needs the AI key to be configured.")
+      : tr("지금은 AI 번역이 잠시 안 돼요. 잠시 후 다시 시도해 주세요.", "AI translation isn't available right now. Please try again in a moment.");
+  }
+
   async function translateDraft() {
     if (!draft.trim() || !partner) return;
+    setDraftError(null);
     setDraftBusy(true);
     try {
       const target = partner.role === "korean" ? "ko" : "en";
-      const res = await fetch("/api/ai/translate", { method: "POST", body: JSON.stringify({ text: draft, target }) });
-      const data = await res.json();
+      const data = await translateText(draft, target);
       if (data.text) setDraft(data.text);
+      else setDraftError(aiErrorText(data.error));
     } finally {
       setDraftBusy(false);
     }
@@ -635,6 +643,11 @@ export default function ChatRoom() {
             <button type="button" className="text-brand-600 hover:underline disabled:opacity-50" onClick={translateDraft} disabled={!draft.trim() || draftBusy}>
               ✦ {draftBusy ? tr("변환 중…", "Converting…") : partner.role === "korean" ? tr("한국어로 바꿔 쓰기", "Rewrite in Korean") : tr("영어로 바꿔 쓰기", "Rewrite in English")}
             </button>
+            {draftError && (
+              <span role="status" className="text-red-600">
+                {draftError}
+              </span>
+            )}
             <span className="text-slate-300">|</span>
             {!isAi && (
               <button type="button" className="text-slate-500 hover:text-red-600" onClick={() => setShowReport(true)}>
@@ -816,4 +829,14 @@ function VideoIcon() {
 
 function Dot({ delay = "0ms" }: { delay?: string }) {
   return <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400" style={{ animationDelay: delay }} />;
+}
+
+/** Ask the server to translate, giving up after 15 seconds so the button never hangs. */
+async function translateText(text: string, target: string): Promise<{ text: string | null; tip?: string; error?: string }> {
+  try {
+    const res = await fetch("/api/ai/translate", { method: "POST", body: JSON.stringify({ text, target }), signal: AbortSignal.timeout(15000) });
+    return await res.json();
+  } catch {
+    return { text: null, error: "timeout" };
+  }
 }
