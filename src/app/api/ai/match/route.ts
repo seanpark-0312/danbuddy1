@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { LANG_NAMES, askClaude, describeProfile, parseJson } from "@/lib/ai";
+import { LANG_NAMES, askAI, describeProfile, parseJson } from "@/lib/ai";
 import type { Profile } from "@/lib/types";
 
 export async function POST(req: Request) {
@@ -16,7 +16,7 @@ Reply with JSON only: {"results":[{"id":"...","score":0-100,"reason":"...","iceb
     .join("\n---\n")}`;
 
   const parsed = parseJson<{ results: { id: string; score: number; reason: string; icebreaker: string }[] }>(
-    await askClaude(system, [{ role: "user", content: user }], 3000),
+    await askAI(system, [{ role: "user", content: user }], 3000),
   );
   if (!parsed) return NextResponse.json({ results: [], ai: false });
   return NextResponse.json({ results: parsed.results, ai: true });

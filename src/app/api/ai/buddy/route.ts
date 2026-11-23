@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { askClaude, describeProfile, type Turn } from "@/lib/ai";
+import { askAI, describeProfile, type Turn } from "@/lib/ai";
 import type { Profile } from "@/lib/types";
 
 /** AI practice buddy, used when no human buddy is online (e.g. a judge testing alone). */
@@ -15,7 +15,7 @@ The person you are talking to:
 ${describeProfile(me)}`;
   const turns = (history ?? []).slice(-20);
   if (!turns.length || turns[0].role !== "user") turns.unshift({ role: "user", content: "(The chat just started. Greet me.)" });
-  const reply = await askClaude(system, turns, 1500);
+  const reply = await askAI(system, turns, 1500);
   return NextResponse.json({
     text:
       reply ??

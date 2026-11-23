@@ -16,7 +16,7 @@
 - Next.js 15 (App Router) + Tailwind CSS 4
 - 실시간: Supabase Realtime (broadcast + presence). 환경변수가 없으면 같은 브라우저의 탭끼리 연결되는 **데모 모드**(BroadcastChannel)로 동작
 - 화상: WebRTC (P2P, STUN 기본, TURN 선택)
-- AI: Claude API (`/api/ai/*`)
+- AI: Google Gemini API 무료 등급 (`/api/ai/*`, 기본 모델 `gemini-flash-latest`)
 
 ## 로컬 실행
 ```bash
@@ -28,10 +28,10 @@ npm run dev
 
 ## 심사용 배포 (Vercel + Supabase, 모두 무료 요금제)
 1. **Supabase**: supabase.com에서 새 프로젝트 생성 → Project Settings → API에서 `Project URL`과 `anon public` 키 복사. (테이블 생성 불필요, Realtime은 기본 활성화)
-2. **Claude API 키**: console.anthropic.com → API Keys에서 발급
+2. **Gemini API 키 (무료)**: aistudio.google.com/apikey 에서 Google 계정으로 로그인 → Create API key. 결제 등록 없이 무료 등급으로 사용
 3. **Vercel**: GitHub 저장소를 Import → Environment Variables에 아래 입력 후 Deploy
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `ANTHROPIC_API_KEY` (나중에 넣어도 됨. 넣은 뒤 Redeploy)
+   - `GEMINI_API_KEY` (나중에 넣어도 됨. 넣은 뒤 Redeploy)
 4. 배포된 `https://<프로젝트>.vercel.app` 주소를 제출
 
 학교·회사 네트워크처럼 P2P가 막힌 환경에서 화상이 연결되지 않으면 TURN 서버(예: Metered 무료 요금제)를 `NEXT_PUBLIC_TURN_*`에 넣어 주세요.

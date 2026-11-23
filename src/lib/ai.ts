@@ -1,5 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
-
 export const LANG_NAMES: Record<string, string> = {
   ko: "Korean",
   en: "English",
@@ -8,16 +6,12 @@ export const LANG_NAMES: Record<string, string> = {
   vi: "Vietnamese",
 };
 
-const MODEL = process.env.AI_MODEL || "claude-opus-5-5";
-
-let client: Anthropic | null | undefined;
-function getClient() {
-  if (client === undefined) client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
-  return client;
-}
+// Google Gemini API (free tier from Google AI Studio). "gemini-flash-latest" always points to the current Flash model.
+const MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
+const API_KEY = process.env.GEMINI_API_KEY;
 
 export function aiEnabled() {
-  return !!getClient();
+  return !!API_KEY;
 }
 
 export interface Turn {
@@ -25,28 +19,29 @@ export interface Turn {
   content: string;
 }
 
-/** One short Claude call. Returns null when no API key is set or the call fails. */
-export async function askClaude(system: string, messages: Turn[], maxTokens = 2000): Promise<string | null> {
-  const c = getClient();
-  if (!c) return null;
+/** One short Gemini call. Returns null when no API key is set or the call fails. */
+export async function askAI(system: string, messages: Turn[], maxTokens = 2000): Promise<string | null> {
+  if (!API_KEY) return null;
   try {
-    const res = await c.beta.messages.create({
-      model: MODEL,
-      max_tokens: maxTokens,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
-      output_config: { effort: "low" },
-      system,
-      messages,
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+        // Flash models may "think" first, which also uses output tokens, so leave generous room.
+        generationConfig: { maxOutputTokens: Math.max(maxTokens, 8192), temperature: 0.8 },
+      }),
     });
-    if (res.stop_reason === "refusal") return null;
-    let text = "";
-    for (const block of res.content) if (block.type === "text") text += block.text;
+    if (!res.ok) {
+      console.error("AI API error", res.status, (await res.text()).slice(0, 300));
+      return null;
+    }
+    const data = await res.json();
+    const text: string = (data.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? "").join("");
     return text.trim() || null;
   } catch (err) {
-    if (err instanceof Anthropic.RateLimitError) console.warn("AI rate limited");
-    else if (err instanceof Anthropic.APIError) console.error("AI API error", err.status, err.message);
-    else console.error("AI call failed", err);
+    console.error("AI call failed", err);
     return null;
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { LANG_NAMES, askClaude, describeProfile, parseJson } from "@/lib/ai";
+import { LANG_NAMES, askAI, describeProfile, parseJson } from "@/lib/ai";
 import type { Profile } from "@/lib/types";
 
 const FALLBACK = {
@@ -40,7 +40,7 @@ Reply with JSON only: {"topics":[{"topic":"...","line":"...","en":"..."}]}`;
     recent.slice(-12).map((m) => `${m.who}: ${m.text}`).join("\n") || "(not started yet)"
   }`;
   const parsed = parseJson<{ topics: { topic: string; line: string; en: string }[] }>(
-    await askClaude(system, [{ role: "user", content: user }]),
+    await askAI(system, [{ role: "user", content: user }]),
   );
   if (!parsed) return NextResponse.json({ topics: FALLBACK[lang as keyof typeof FALLBACK] ?? FALLBACK.en, ai: false });
   return NextResponse.json({ topics: parsed.topics.slice(0, 3), ai: true });
