@@ -32,11 +32,19 @@ export interface AIResult {
   detail?: string;
 }
 
-/** One short Gemini call with a time limit. Never throws. */
-export async function callAI(system: string, messages: Turn[], maxTokens = 2000, timeoutMs = 15000): Promise<AIResult> {
+// When a model is busy (503), rate limited (429) or gone (404), the next one in this list is tried.
+const FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const RETRY_STATUS = new Set([404, 429, 500, 502, 503, 504]);
+
+export function modelChain() {
+  return [MODEL, ...FALLBACK_MODELS.filter((m) => m !== MODEL)];
+}
+
+/** One Gemini call to a specific model. Never throws. */
+export async function callModel(model: string, system: string, messages: Turn[], maxTokens: number, timeoutMs: number): Promise<AIResult> {
   if (!API_KEY) return { text: null, error: "no-key" };
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
       signal: AbortSignal.timeout(timeoutMs),
@@ -49,7 +57,7 @@ export async function callAI(system: string, messages: Turn[], maxTokens = 2000,
     });
     if (!res.ok) {
       const body = (await res.text()).slice(0, 400);
-      console.error("AI API error", res.status, body);
+      console.error("AI API error", model, res.status, body);
       let detail = body;
       try {
         detail = JSON.parse(body)?.error?.message ?? body;
@@ -62,9 +70,23 @@ export async function callAI(system: string, messages: Turn[], maxTokens = 2000,
     return { text: text.trim() };
   } catch (err) {
     const timeout = err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
-    console.error("AI call failed", err);
+    console.error("AI call failed", model, err);
     return { text: null, error: timeout ? "timeout" : "api", detail: err instanceof Error ? err.message.slice(0, 200) : undefined };
   }
+}
+
+/** Gemini call with a total time limit, moving to a backup model when one is busy. Never throws. */
+export async function callAI(system: string, messages: Turn[], maxTokens = 2000, timeoutMs = 15000): Promise<AIResult> {
+  if (!API_KEY) return { text: null, error: "no-key" };
+  const deadline = Date.now() + timeoutMs;
+  let last: AIResult = { text: null, error: "timeout" };
+  for (const model of modelChain()) {
+    const left = deadline - Date.now();
+    if (left < 1500) break;
+    last = await callModel(model, system, messages, maxTokens, left);
+    if (last.text || last.error === "timeout" || !RETRY_STATUS.has(last.status ?? 0)) return last;
+  }
+  return last;
 }
 
 /** Same as callAI, returning only the text (null on any failure). */
