@@ -1,103 +1,138 @@
-import Image from "next/image";
+"use client";
+import Link from "next/link";
+import { useT } from "@/lib/i18n";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const tr = useT();
+  const features = [
+    {
+      icon: "01",
+      title: tr("AI 버디 매칭", "AI buddy matching"),
+      body: tr(
+        "관심사·목적·언어 수준을 읽고, 서로 도움이 되는 상대와 '왜 잘 맞는지'를 설명해 드려요.",
+        "AI reads interests, goals and language levels, then explains why a buddy is a good fit.",
+      ),
+    },
+    {
+      icon: "02",
+      title: tr("가벼운 1:1 채팅", "Light 1:1 chat"),
+      body: tr(
+        "랜덤 매칭 또는 추천 상대에게 대화 신청. 대화는 서버에 저장되지 않아요.",
+        "Random match or request a recommended buddy. Chats are never stored on a server.",
+      ),
+    },
+    {
+      icon: "03",
+      title: tr("AI 번역·대화 주제", "AI translation & topics"),
+      body: tr(
+        "말이 막히면 메시지 번역, 표현 팁, 다음 대화 주제를 AI가 바로 제안해요.",
+        "Stuck? Get instant translation, expression tips and next-topic ideas.",
+      ),
+    },
+    {
+      icon: "04",
+      title: tr("동의하면 화상으로", "Video only with consent"),
+      body: tr(
+        "한쪽이 요청하고 상대가 수락했을 때만 화상 대화로 전환돼요. 언제든 텍스트로 복귀.",
+        "Video starts only when one asks and the other accepts. Back to text anytime.",
+      ),
+    },
+  ];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <main className="mx-auto max-w-6xl px-4 pb-20">
+      <section className="grid items-center gap-10 py-12 md:grid-cols-2 md:py-20">
+        <div>
+          <p className="mb-4 inline-block rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
+            {tr("단국대 유학생 × 한국 학생 버디 매칭", "Dankook international × Korean student buddies")}
+          </p>
+          <h1 className="text-[32px] font-extrabold leading-tight tracking-tight text-brand-900 md:text-5xl">
+            {tr("말 걸기 어려웠던 그 친구,", "The friend you never")}
+            <br />
+            <span className="text-brand-600">{tr("AI가 먼저 이어 줄게요.", "got to talk to. Meet them here.")}</span>
+          </h1>
+          <p className="mt-5 text-lg leading-relaxed text-slate-600">
+            {tr(
+              "외국인 친구와 영어 회화를 원하는 한국 학생, 한국 생활과 학교 적응이 필요한 유학생. 서로에게 꼭 필요한 버디를 만나 채팅으로 시작하고, 마음이 맞으면 화상으로 이야기해 보세요.",
+              "Korean students who want international friends and English practice. International students who need help settling into Korea and campus life. Meet the buddy you need, start with chat, and switch to video when you're both ready.",
+            )}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/onboard" className="btn-primary px-6 py-3 text-base">
+              {tr("버디 만나러 가기", "Find my buddy")} →
+            </Link>
+            <a href="#how" className="btn-ghost px-6 py-3 text-base">
+              {tr("어떻게 작동하나요?", "How it works")}
+            </a>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="relative">
+          <div className="card space-y-3 p-5 shadow-[0_20px_50px_-20px_rgba(0,72,155,0.25)]">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+              <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-600 font-semibold text-white">E</span>
+              <div>
+                <p className="font-semibold">Emma · France</p>
+                <p className="text-xs text-brand-600">✦ {tr("둘 다 카페 탐방과 K-드라마를 좋아해요", "You both love cafes and K-dramas")}</p>
+              </div>
+              <span className="ml-auto text-lg font-bold text-brand-600">92</span>
+            </div>
+            <Bubble side="left">Hi! Do you know a good place to eat near Jukjeon campus? 😊</Bubble>
+            <Bubble side="right">{tr("물론이죠! 정문 앞 칼국수 집 추천해요. Have you tried kalguksu?", "Sure! Try the kalguksu place by the main gate.")}</Bubble>
+            <Bubble side="left">Not yet! Can we go together this Friday?</Bubble>
+            <div className="flex items-center gap-2 rounded-xl bg-brand-50 p-3 text-sm text-brand-900">
+              <span className="flex-1">{tr("Emma 님이 화상 대화를 요청했어요", "Emma asked to switch to video")}</span>
+              <span className="rounded-lg bg-brand-600 px-2 py-1 text-xs font-semibold text-white">{tr("수락", "Accept")}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {features.map((f) => (
+          <div key={f.title} className="card p-5">
+            <div className="text-xs font-bold tracking-widest text-brand-600">{f.icon}</div>
+            <h3 className="mt-3 font-bold text-brand-900">{f.title}</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{f.body}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="mt-12 card p-6 md:p-8">
+        <h2 className="text-xl font-bold text-brand-900">{tr("이렇게 사용해요", "How to use")}</h2>
+        <ol className="mt-4 grid gap-4 md:grid-cols-4">
+          {[
+            tr("프로필 작성: 한국 학생/유학생, 관심사, 원하는 도움", "Profile: Korean or international, interests, what you need"),
+            tr("로비에서 AI 추천 버디 확인 또는 랜덤 매칭", "See AI-recommended buddies or random match in the lobby"),
+            tr("채팅 중 AI 번역·주제 추천으로 대화 이어가기", "Keep chatting with AI translation and topic ideas"),
+            tr("서로 동의하면 화상 대화로 전환", "Switch to video when you both agree"),
+          ].map((s, i) => (
+            <li key={i} className="flex gap-3">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-600 text-sm font-bold text-white">{i + 1}</span>
+              <span className="text-sm text-slate-700">{s}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-6 rounded-lg border-l-4 border-brand-600 bg-brand-50 p-3 text-sm text-brand-900">
+          {tr(
+            "혼자 체험해 보신다면: 브라우저 창 두 개로 각각 한국 학생·유학생 프로필을 만들어 서로 매칭하거나, 로비의 'AI 연습 버디'와 대화해 보세요.",
+            "Trying it alone? Open two browser windows with a Korean and an international profile and match them, or chat with the 'AI practice buddy' in the lobby.",
+          )}
+        </p>
+      </section>
+    </main>
+  );
+}
+
+function Bubble({ side, children }: { side: "left" | "right"; children: React.ReactNode }) {
+  return (
+    <div className={`flex ${side === "right" ? "justify-end" : ""}`}>
+      <p
+        className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${
+          side === "right" ? "rounded-br-md bg-brand-600 text-white" : "rounded-bl-md bg-slate-100 text-slate-800"
+        }`}
+      >
+        {children}
+      </p>
     </div>
   );
 }

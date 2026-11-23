@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DanBuddy 단버디
 
-## Getting Started
+단국대 유학생과 한국 학생을 AI로 이어 주는 1:1 버디 매칭 웹앱 (2026 CTL Championship ⑤ 글로벌 출품작).
 
-First, run the development server:
+## 기능
+- **프로필**: 한국 학생 / 유학생, 국가, 언어 수준, 관심사, 원하는 도움 (브라우저에만 저장)
+- **로비**: 접속 중인 버디를 궁합 점수 순으로 표시, **AI 추천 이유**와 첫 마디 제안
+- **매칭**: 원하는 상대에게 대화 신청(수락/거절) 또는 **랜덤 매칭**(한국 학생 ↔ 유학생 우선)
+- **1:1 채팅**: 입력 중 표시, 메시지별 **AI 번역 + 표현 팁**, 내 글을 상대 언어로 **바꿔 쓰기**, **AI 대화 주제 추천**
+- **화상 전환**: 한쪽이 요청하고 상대가 수락할 때만 WebRTC 화상 연결, 마이크/카메라 끄기, 언제든 텍스트로 복귀
+- **안전**: 대화 서버 미저장, 신고·차단, 입장 코드로 비공개 데모
+- **AI 연습 버디**: 접속자가 없을 때 AI(Emma / 민준)와 대화 연습
 
+## 구조
+- Next.js 15 (App Router) + Tailwind CSS 4
+- 실시간: Supabase Realtime (broadcast + presence). 환경변수가 없으면 같은 브라우저의 탭끼리 연결되는 **데모 모드**(BroadcastChannel)로 동작
+- 화상: WebRTC (P2P, STUN 기본, TURN 선택)
+- AI: Claude API (`/api/ai/*`)
+
+## 로컬 실행
 ```bash
+npm install
+cp .env.example .env.local   # 값은 비워 둬도 데모 모드로 실행됨
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+브라우저 창 두 개에서 각각 한국 학생 / 유학생 프로필을 만들면 서로 매칭됩니다.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 심사용 비공개 배포 (Vercel + Supabase, 모두 무료 요금제)
+1. **Supabase**: supabase.com에서 새 프로젝트 생성 → Project Settings → API에서 `Project URL`과 `anon public` 키 복사. (테이블 생성 불필요, Realtime은 기본 활성화)
+2. **Claude API 키**: console.anthropic.com → API Keys에서 발급
+3. **Vercel**: GitHub 저장소를 Import → Environment Variables에 아래 입력 후 Deploy
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `ANTHROPIC_API_KEY`
+   - `ACCESS_CODE` (심사위원에게 알려 줄 입장 코드)
+4. 배포된 `https://<프로젝트>.vercel.app` 주소와 입장 코드를 제출
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+학교·회사 네트워크처럼 P2P가 막힌 환경에서 화상이 연결되지 않으면 TURN 서버(예: Metered 무료 요금제)를 `NEXT_PUBLIC_TURN_*`에 넣어 주세요.
