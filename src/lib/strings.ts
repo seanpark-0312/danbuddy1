@@ -148,4 +148,7 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "Your video stays in this browser. It is never sent or recorded.": { ja: "自分の映像はこのブラウザ内だけで表示され、送信・録画されません。", zh: "你的视频只在本浏览器中显示，不会被发送或录制。" },
   "Turn on my camera": { ja: "カメラをオンにする", zh: "打开我的摄像头" },
   "No video": { ja: "ビデオなし", zh: "无视频" },
+  "End the video call?": { ja: "ビデオ通話を終了しますか？", zh: "要结束视频通话吗？" },
+  "Only the video ends. Your text chat continues.": { ja: "ビデオだけが終了し、テキストチャットはそのまま続きます。", zh: "只会结束视频，文字聊天会继续。" },
+  "End video": { ja: "ビデオを終了", zh: "结束视频" },
 };

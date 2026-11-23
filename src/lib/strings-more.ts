@@ -415,4 +415,7 @@ export const MORE: Record<string, [string, string, string, string, string]> = {
   "Your video stays in this browser. It is never sent or recorded.": ["Tu vídeo se queda en este navegador. Nunca se envía ni se graba.", "Ta vidéo reste dans ce navigateur. Elle n’est jamais envoyée ni enregistrée.", "Dein Video bleibt in diesem Browser. Es wird nie gesendet oder aufgezeichnet.", "Ваше видео остаётся в этом браузере. Оно не передаётся и не записывается.", "Бейнеңіз осы браузерде ғана қалады. Ол жіберілмейді және жазылмайды."],
   "Turn on my camera": ["Encender mi cámara", "Activer ma caméra", "Meine Kamera einschalten", "Включить мою камеру", "Камерамды қосу"],
   "No video": ["Sin vídeo", "Pas de vidéo", "Kein Video", "Нет видео", "Бейне жоқ"],
+  "End the video call?": ["¿Terminar la videollamada?", "Mettre fin à l’appel vidéo ?", "Videoanruf beenden?", "Завершить видеозвонок?", "Бейнеқоңырауды аяқтау керек пе?"],
+  "Only the video ends. Your text chat continues.": ["Solo termina el vídeo. El chat de texto continúa.", "Seule la vidéo s’arrête. La discussion écrite continue.", "Nur das Video endet. Euer Textchat geht weiter.", "Завершится только видео. Переписка продолжится.", "Тек бейне аяқталады. Мәтіндік чат жалғасады."],
+  "End video": ["Terminar vídeo", "Arrêter la vidéo", "Video beenden", "Завершить видео", "Бейнені аяқтау"],
 };

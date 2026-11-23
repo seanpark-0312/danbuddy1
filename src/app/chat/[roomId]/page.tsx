@@ -74,6 +74,7 @@ export default function ChatRoom() {
   const [draftBusy, setDraftBusy] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showVideoRules, setShowVideoRules] = useState(false);
+  const [confirmEnd, setConfirmEnd] = useState<"ai" | "human" | null>(null);
   const [channel, setChannel] = useState<RTChannel | null>(null);
   const seenPartner = useRef(false);
   const lastTypingSent = useRef(0);
@@ -179,6 +180,7 @@ export default function ChatRoom() {
       if (e.key !== "Escape") return;
       setShowReport(false);
       setShowVideoRules(false);
+      setConfirmEnd(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -398,7 +400,7 @@ export default function ChatRoom() {
               ]}
             />
             <div className="absolute bottom-3 left-3 flex gap-2">
-              <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={video.end}>
+              <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={() => setConfirmEnd("human")}>
                 {tr("텍스트로 돌아가기", "Back to text")}
               </button>
             </div>
@@ -445,7 +447,7 @@ export default function ChatRoom() {
               />
             )}
             <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
-              <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={() => stopAiVideo()}>
+              <button className="btn bg-red-600 px-3 py-1.5 text-white" onClick={() => setConfirmEnd("ai")}>
                 {tr("텍스트로 돌아가기", "Back to text")}
               </button>
             </div>
@@ -692,6 +694,32 @@ export default function ChatRoom() {
                 }}
               >
                 {isAi ? tr("내 카메라 켜기", "Turn on my camera") : tr("요청 보내기", "Send request")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmEnd && (
+        <div className="fixed inset-0 z-40 grid place-items-center overscroll-contain bg-slate-900/50 p-4" onClick={() => setConfirmEnd(null)}>
+          <div role="alertdialog" aria-modal="true" aria-labelledby="end-title" className="card w-full max-w-sm p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <p id="end-title" className="text-lg font-semibold">
+              {tr("화상 대화를 종료할까요?", "End the video call?")}
+            </p>
+            <p className="mt-1 text-sm text-slate-600">{tr("화상만 종료되고, 텍스트 채팅은 계속 이어져요.", "Only the video ends. Your text chat continues.")}</p>
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              <button className="btn-ghost" autoFocus onClick={() => setConfirmEnd(null)}>
+                {tr("취소", "Cancel")}
+              </button>
+              <button
+                className="btn bg-red-600 text-white hover:bg-red-700"
+                onClick={() => {
+                  if (confirmEnd === "ai") stopAiVideo();
+                  else video.end();
+                  setConfirmEnd(null);
+                }}
+              >
+                {tr("화상 종료", "End video")}
               </button>
             </div>
           </div>
