@@ -8,7 +8,7 @@
 - **매칭**: 원하는 상대에게 대화 신청(수락/거절) 또는 **랜덤 매칭**(한국 학생 ↔ 유학생 우선)
 - **1:1 채팅**: 입력 중 표시, 메시지별 **AI 번역 + 표현 팁**, 내 글을 상대 언어로 **바꿔 쓰기**, **AI 대화 주제 추천**
 - **화상 전환**: 한쪽이 요청하고 상대가 수락할 때만 WebRTC 화상 연결, 마이크/카메라 끄기, 언제든 텍스트로 복귀
-- **안전**: 대화 서버 미저장, 신고·차단, 입장 코드로 비공개 데모
+- **안전**: 대화 서버 미저장, 신고·차단, 검색엔진 노출 차단(noindex)
 - **AI 연습 버디**: 접속자가 없을 때 AI(Emma / 민준)와 대화 연습
 
 ## 구조
@@ -25,13 +25,12 @@ npm run dev
 ```
 브라우저 창 두 개에서 각각 한국 학생 / 유학생 프로필을 만들면 서로 매칭됩니다.
 
-## 심사용 비공개 배포 (Vercel + Supabase, 모두 무료 요금제)
+## 심사용 배포 (Vercel + Supabase, 모두 무료 요금제)
 1. **Supabase**: supabase.com에서 새 프로젝트 생성 → Project Settings → API에서 `Project URL`과 `anon public` 키 복사. (테이블 생성 불필요, Realtime은 기본 활성화)
 2. **Claude API 키**: console.anthropic.com → API Keys에서 발급
 3. **Vercel**: GitHub 저장소를 Import → Environment Variables에 아래 입력 후 Deploy
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `ANTHROPIC_API_KEY`
-   - `ACCESS_CODE` (심사위원에게 알려 줄 입장 코드)
-4. 배포된 `https://<프로젝트>.vercel.app` 주소와 입장 코드를 제출
+   - `ANTHROPIC_API_KEY` (나중에 넣어도 됨. 넣은 뒤 Redeploy)
+4. 배포된 `https://<프로젝트>.vercel.app` 주소를 제출
 
 학교·회사 네트워크처럼 P2P가 막힌 환경에서 화상이 연결되지 않으면 TURN 서버(예: Metered 무료 요금제)를 `NEXT_PUBLIC_TURN_*`에 넣어 주세요.
