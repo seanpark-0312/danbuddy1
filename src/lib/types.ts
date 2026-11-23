@@ -20,6 +20,7 @@ export interface ChatMessage {
   from: string; // profile id, or "system"
   text: string;
   ts: number;
+  image?: string; // JPEG data URL, sent peer to peer and never stored
 }
 
 export const AVATARS = ["🐻", "🦊", "🐼", "🐯", "🐰", "🐧", "🦁", "🐨", "🐸", "🐙", "🦄", "🐳"];

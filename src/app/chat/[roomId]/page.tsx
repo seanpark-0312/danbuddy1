@@ -10,6 +10,7 @@ import type { ChatMessage, Profile } from "@/lib/types";
 import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
 import { AiBuddyScreen, speak, useAiVideo } from "@/components/AiVideo";
 import { SelfTile } from "@/components/SelfTile";
+import { AttachButton, PhotoViewer } from "@/components/PhotoAttach";
 
 interface Topic {
   topic: string;
@@ -66,6 +67,8 @@ export default function ChatRoom() {
   const [partnerLeft, setPartnerLeft] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
   const [typing, setTyping] = useState(false);
   const [aiThinking, setAiThinking] = useState(false);
   const [translations, setTranslations] = useState<Record<string, Translation>>({});
@@ -104,6 +107,7 @@ export default function ChatRoom() {
     if (!me || isAi) return;
     const c = openChannel(`room:${roomId}`, me.id);
     c.on("msg", (m: ChatMessage) => {
+      if (m.image && (typeof m.image !== "string" || !m.image.startsWith("data:image/"))) delete m.image;
       setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
       setTyping(false);
     });
@@ -210,7 +214,7 @@ export default function ChatRoom() {
           event,
           history: history
             .filter((m) => m.from !== "system")
-            .map((m) => ({ role: m.from === me.id ? "user" : "assistant", content: m.text })),
+            .map((m) => ({ role: m.from === me.id ? "user" : "assistant", content: m.image ? `${m.text} (sent a photo)`.trim() : m.text })),
         }),
       });
       const data = await res.json();
@@ -260,11 +264,12 @@ export default function ChatRoom() {
 
   function send(text = draft) {
     const t = text.trim();
-    if (!t || !me || partnerLeft) return;
-    const msg: ChatMessage = { id: crypto.randomUUID(), from: me.id, text: t.slice(0, 1000), ts: Date.now() };
+    if ((!t && !photo) || !me || partnerLeft) return;
+    const msg: ChatMessage = { id: crypto.randomUUID(), from: me.id, text: t.slice(0, 1000), ts: Date.now(), ...(photo ? { image: photo } : {}) };
     const next = [...messages, msg];
     setMessages(next);
     setDraft("");
+    setPhoto(null);
     if (isAi) askAiBuddy(next);
     else channel?.send("msg", msg);
   }
@@ -508,26 +513,45 @@ export default function ChatRoom() {
               <div key={m.id} className={`group flex ${mine ? "justify-end" : "items-end gap-2"}`}>
                 {!mine && <Avatar p={partner} size="sm" />}
                 <div className={`max-w-[78%] ${mine ? "items-end" : ""} flex flex-col`}>
-                  <p
-                    className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed ${
-                      mine ? "rounded-br-md bg-brand-600 text-white" : "rounded-bl-md bg-slate-100 text-slate-900"
-                    }`}
-                  >
-                    {m.text}
-                  </p>
+                  {m.image && (
+                    <button
+                      type="button"
+                      onClick={() => setViewing(m.image!)}
+                      aria-label={tr("사진 크게 보기", "View photo")}
+                      className={`overflow-hidden rounded-2xl border border-slate-200 ${m.text ? "mb-1" : ""} ${mine ? "self-end rounded-br-md" : "self-start rounded-bl-md"}`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={m.image} alt={tr("보낸 사진", "Shared photo")} className="block h-auto max-h-80 w-60 max-w-full object-cover" />
+                    </button>
+                  )}
+                  {m.text && (
+                    <p
+                      className={`whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed ${
+                        mine ? "rounded-br-md bg-brand-600 text-white" : "rounded-bl-md bg-slate-100 text-slate-900"
+                      }`}
+                    >
+                      {m.text}
+                    </p>
+                  )}
                   {tl && (
                     <div className={`mt-1 rounded-lg border border-brand-100 bg-brand-50 px-3 py-1.5 text-sm text-brand-900 ${mine ? "self-end" : ""}`}>
                       {tl.loading ? tr("번역 중…", "Translating…") : tl.text}
                       {tl.tip && <span className="mt-0.5 block text-xs text-brand-700">{tl.tip}</span>}
                     </div>
                   )}
-                  <button
-                    onClick={() => translateMessage(m)}
-                    className={`mt-0.5 text-[11px] text-slate-400 hover:text-brand-600 ${mine ? "self-end" : "self-start"}`}
-                  >
-                    {tl?.text ? tr("번역 숨기기", "Hide translation") : tr("번역", "Translate")} ·{" "}
-                    {new Date(m.ts).toLocaleTimeString(LANGS.find((l) => l.key === lang)?.locale, { hour: "numeric", minute: "2-digit" })}
-                  </button>
+                  {m.text ? (
+                    <button
+                      onClick={() => translateMessage(m)}
+                      className={`mt-0.5 text-[11px] text-slate-400 hover:text-brand-600 ${mine ? "self-end" : "self-start"}`}
+                    >
+                      {tl?.text ? tr("번역 숨기기", "Hide translation") : tr("번역", "Translate")} ·{" "}
+                      {new Date(m.ts).toLocaleTimeString(LANGS.find((l) => l.key === lang)?.locale, { hour: "numeric", minute: "2-digit" })}
+                    </button>
+                  ) : (
+                    <span className={`mt-0.5 text-[11px] text-slate-400 ${mine ? "self-end" : "self-start"}`}>
+                      {new Date(m.ts).toLocaleTimeString(LANGS.find((l) => l.key === lang)?.locale, { hour: "numeric", minute: "2-digit" })}
+                    </span>
+                  )}
                 </div>
               </div>
             );
@@ -567,7 +591,25 @@ export default function ChatRoom() {
               ))}
             </div>
           )}
+          {photo && (
+            <div className="mb-2 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photo} alt={tr("보낼 사진", "Photo to send")} className="h-16 w-16 rounded-lg object-cover" />
+              <p className="min-w-0 flex-1 text-xs text-slate-500">{tr("사진은 서버에 저장되지 않고 상대에게 바로 전달돼요.", "Photos go straight to your buddy and are not stored on a server.")}</p>
+              <button
+                type="button"
+                onClick={() => setPhoto(null)}
+                aria-label={tr("사진 빼기", "Remove photo")}
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-slate-500 hover:bg-slate-200"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
           <div className="flex items-end gap-2">
+            <AttachButton disabled={partnerLeft} onPhoto={setPhoto} onError={addSystem} />
             <textarea
               name="message"
               aria-label={tr("메시지를 입력하세요", "Type a message")}
@@ -585,7 +627,7 @@ export default function ChatRoom() {
                 }
               }}
             />
-            <button className="btn-primary h-11" disabled={!draft.trim() || partnerLeft}>
+            <button className="btn-primary h-11" disabled={(!draft.trim() && !photo) || partnerLeft}>
               {tr("전송", "Send")}
             </button>
           </div>
@@ -699,6 +741,8 @@ export default function ChatRoom() {
           </div>
         </div>
       )}
+
+      {viewing && <PhotoViewer src={viewing} onClose={() => setViewing(null)} />}
 
       {confirmEnd && (
         <div className="fixed inset-0 z-40 grid place-items-center overscroll-contain bg-slate-900/50 p-4" onClick={() => setConfirmEnd(null)}>
