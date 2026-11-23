@@ -11,8 +11,9 @@ export const LANG_NAMES: Record<string, string> = {
   vi: "Vietnamese",
 };
 
-// Google Gemini API (free tier from Google AI Studio). "gemini-flash-latest" always points to the current Flash model.
-const MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
+// Google Gemini API (free tier from Google AI Studio). The "-latest" names always point to the current models.
+// Flash-Lite is the default: it is fast and its free quota is larger than Flash.
+const MODEL = process.env.GEMINI_MODEL || "gemini-flash-lite-latest";
 const API_KEY = process.env.GEMINI_API_KEY;
 
 export function aiEnabled() {
@@ -33,7 +34,7 @@ export interface AIResult {
 }
 
 // When a model is busy (503), rate limited (429) or gone (404), the next one in this list is tried.
-const FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const FALLBACK_MODELS = ["gemini-flash-latest", "gemini-3.5-flash-lite"];
 const RETRY_STATUS = new Set([404, 429, 500, 502, 503, 504]);
 
 export function modelChain() {
