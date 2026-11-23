@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { pickLabel, useLang, useT, type Lang } from "@/lib/i18n";
-import { getSessionId, loadProfile, saveProfile } from "@/lib/profile";
+import { getSessionId, hasSessionProfile, loadProfile, saveProfile } from "@/lib/profile";
 import { AVATARS, GOALS, INTERESTS, LEVELS, type Level, type Profile, type Role } from "@/lib/types";
 
 const EMPTY: Omit<Profile, "id"> = {
@@ -24,11 +24,13 @@ export default function Onboard() {
   const router = useRouter();
   const [p, setP] = useState<Omit<Profile, "id">>(EMPTY);
   const [loaded, setLoaded] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [tried, setTried] = useState(false);
 
   useEffect(() => {
     const saved = loadProfile();
     if (saved) setP(saved);
+    setEditing(hasSessionProfile());
     setLoaded(true);
   }, []);
 
@@ -56,14 +58,14 @@ export default function Onboard() {
       return;
     }
     saveProfile({ ...p, nickname: p.nickname.trim(), id: getSessionId() });
-    router.push("/lobby");
+    router.push(editing ? "/profile" : "/lobby");
   }
 
   if (!loaded) return null;
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="text-2xl font-bold text-brand-900">{tr("버디 프로필 만들기", "Create your buddy profile")}</h1>
+      <h1 className="text-2xl font-bold text-brand-900">{editing ? tr("프로필 수정", "Edit profile") : tr("버디 프로필 만들기", "Create your buddy profile")}</h1>
       <p className="mt-1 text-sm text-slate-600">
         {tr(
           "AI가 이 정보로 잘 맞는 버디를 찾아요. 프로필은 이 브라우저에만 저장돼요.",

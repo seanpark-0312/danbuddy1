@@ -8,6 +8,7 @@ import { isDemoMode, openChannel, type RTChannel } from "@/lib/realtime";
 import { matchScore, sharedInterests } from "@/lib/matching";
 import type { Friend, Profile } from "@/lib/types";
 import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
+import { AI_BUDDIES, INTERNATIONAL_BUDDIES, buddyById } from "@/lib/aiBuddies";
 
 type Status = "idle" | "searching" | "busy";
 interface Presence {
@@ -108,6 +109,22 @@ export default function Lobby() {
     if (me) ch.current?.track({ profile: me, status: incoming || pendingTo ? "busy" : status });
   }, [me, status, incoming, pendingTo]);
 
+  // "Say hi" on the friends page comes here as /lobby?invite=<uid>; send it once they show up online
+  const inviteUid = useRef<string | null>(null);
+  useEffect(() => {
+    inviteUid.current = new URLSearchParams(window.location.search).get("invite");
+  }, []);
+  useEffect(() => {
+    const uid = inviteUid.current;
+    if (!uid || !me || pendingTo) return;
+    const o = others.find((x) => x.profile.uid === uid);
+    if (!o || o.status === "busy") return;
+    inviteUid.current = null;
+    window.history.replaceState(null, "", "/lobby");
+    requestChat(o.profile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [others, me, pendingTo]);
+
   const ranked = useMemo(() => {
     if (!me) return [];
     return others
@@ -175,7 +192,7 @@ export default function Lobby() {
   }
 
   function chatWithFriend(f: Friend, online?: Presence) {
-    if (f.ai) router.push(`/chat/ai-${f.uid === "ai-minjun" ? "minjun" : "emma"}-${crypto.randomUUID().slice(0, 8)}`);
+    if (f.ai) router.push(`/chat/ai-${buddyById(f.uid)?.key ?? "emma"}-${crypto.randomUUID().slice(0, 8)}`);
     else if (online) requestChat(online.profile);
   }
 
@@ -221,8 +238,14 @@ export default function Lobby() {
 
           <div className="card space-y-3 p-5">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold">{tr("내 친구", "My friends")}</h2>
-              {friends.length > 0 && <span className="text-xs text-slate-500">{friends.length}</span>}
+              <h2 className="font-semibold">
+                {tr("내 친구", "My friends")} {friends.length > 0 && <span className="text-sm font-medium text-slate-400">{friends.length}</span>}
+              </h2>
+              {friends.length > 0 && (
+                <Link href="/friends" className="text-xs font-semibold text-brand-600 hover:underline">
+                  {tr("친구 관리", "Manage")}
+                </Link>
+              )}
             </div>
             {friends.length === 0 ? (
               <p className="text-sm text-slate-600">
@@ -312,9 +335,30 @@ export default function Lobby() {
                 "No one online? Warm up by chatting with an AI buddy first.",
               )}
             </p>
-            <button className="btn-ghost w-full" onClick={() => router.push(`/chat/ai-${crypto.randomUUID().slice(0, 8)}`)}>
-              {me.role === "korean" ? tr("Emma (프랑스 유학생)와 대화", "Chat with Emma (from France)") : tr("민준 (한국 학생)과 대화", "Chat with Minjun (Korean student)")}
-            </button>
+            <ul className="space-y-2">
+              {(me.role === "korean" ? INTERNATIONAL_BUDDIES : (["minjun"] as const)).map((k) => {
+                const b = AI_BUDDIES[k];
+                return (
+                  <li key={k}>
+                    <button
+                      className="flex w-full items-center gap-3 rounded-xl border border-slate-200 px-3 py-2.5 text-left transition hover:border-brand-500 hover:bg-brand-50"
+                      onClick={() => router.push(`/chat/ai-${k}-${crypto.randomUUID().slice(0, 8)}`)}
+                    >
+                      <span className="text-2xl leading-none" aria-hidden>
+                        {b.flag}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold">{b.name}</span>
+                        <span className="block truncate text-xs text-slate-500">
+                          {b.profile.country} · {b.profile.major}
+                        </span>
+                      </span>
+                      <span className="text-xs font-semibold text-brand-600">{tr("대화하기", "Chat")}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </aside>
 

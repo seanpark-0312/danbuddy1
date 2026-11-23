@@ -12,6 +12,7 @@ import { AiBuddyScreen, BuddyLiveVideo, speak, useAiVideo } from "@/components/A
 import { SelfTile } from "@/components/SelfTile";
 import { AttachButton, PhotoViewer } from "@/components/PhotoAttach";
 import { PipStage } from "@/components/PipStage";
+import { buddyById, buddyForRoom } from "@/lib/aiBuddies";
 
 interface Translation {
   text: string | null;
@@ -19,36 +20,6 @@ interface Translation {
   loading?: boolean;
 }
 
-function aiPartnerFor(me: Profile, roomId: string): Profile {
-  const emma = roomId.startsWith("ai-emma") ? true : roomId.startsWith("ai-minjun") ? false : me.role === "korean";
-  return emma
-    ? {
-        id: "ai-emma",
-        nickname: "Emma (AI)",
-        avatar: "🦊",
-        role: "international",
-        country: "France",
-        major: "Business",
-        koreanLevel: "basic",
-        englishLevel: "fluent",
-        interests: ["drama", "cafe", "travel", "food"],
-        goals: ["friend", "korean", "life"],
-        intro: "Bonjour! Exchange student at Jukjeon campus. Help me with Korean life? 🙏",
-      }
-    : {
-        id: "ai-minjun",
-        nickname: "민준 Minjun (AI)",
-        avatar: "🐻",
-        role: "korean",
-        country: "대한민국 Korea",
-        major: "Computer Science",
-        koreanLevel: "native",
-        englishLevel: "conversational",
-        interests: ["games", "tech", "food", "kpop"],
-        goals: ["friend", "english", "help"],
-        intro: "단국대 소프트웨어학과 학생이에요. 학교생활 뭐든 물어보세요!",
-      };
-}
 
 export default function ChatRoom() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -132,7 +103,7 @@ export default function ChatRoom() {
       setMessages(log);
     }
     if (isAi) {
-      setPartnerState(aiPartnerFor(p, roomId));
+      setPartnerState(buddyForRoom(roomId, p.role).profile);
       setPartnerHere(true);
     } else setPartnerState(getPartner(roomId));
   }, [roomId, isAi, router]);
@@ -280,6 +251,7 @@ export default function ChatRoom() {
         body: JSON.stringify({
           me,
           event,
+          bot: partner?.id ? buddyById(partner.id)?.key : undefined,
           history: history
             .filter((m) => m.from !== "system")
             .map((m) => ({ role: m.from === me.id ? "user" : "assistant", content: m.image ? `${m.text} (sent a photo)`.trim() : m.text })),
@@ -429,6 +401,9 @@ export default function ChatRoom() {
   }
 
   const shared = sharedInterests(me, partner);
+  const aiBuddy = isAi ? buddyById(partner.id) : undefined;
+  const aiKey = aiBuddy?.key ?? "emma";
+  const aiName = aiBuddy?.name ?? partner.nickname;
   const videoActive = video.state === "connecting" || video.state === "on";
 
   return (
@@ -547,15 +522,15 @@ export default function ChatRoom() {
               <AiBuddyScreen
                 helloDone={aiHelloDone}
                 onHelloDone={markAiHelloDone}
-                name={partner.id === "ai-emma" ? "emma" : "minjun"}
-                displayName={partner.id === "ai-emma" ? "Emma" : "Minjun"}
+                name={aiKey}
+                displayName={aiName}
                 state={aiVideo.state}
                 talking={aiTalking}
                 label={tr("AI 연습 버디 · AI 생성 영상", "AI practice buddy · AI-generated video")}
                 connectingText={
                   aiVideo.state === "camera"
                     ? tr("카메라를 켜는 중…", "Turning on your camera…")
-                    : tr("{name} 님이 카메라를 켜는 중…", "{name} is turning on the camera…", { name: partner.id === "ai-emma" ? "Emma" : "Minjun" })
+                    : tr("{name} 님이 카메라를 켜는 중…", "{name} is turning on the camera…", { name: aiName })
                 }
               />
             </div>
@@ -596,9 +571,9 @@ export default function ChatRoom() {
           // live copy of the buddy for browsers that only support video PiP (Safari, Android, iPhone)
           <BuddyLiveVideo
             videoRef={aiPipVideo}
-            fallbackSrc={`/buddy/${partner.id === "ai-emma" ? "emma" : "minjun"}/${aiTalking ? "talk" : "idle"}.mp4`}
+            fallbackSrc={`/buddy/${aiKey}/${aiTalking ? "talk" : "idle"}.mp4`}
             talking={aiTalking}
-            initial={partner.id === "ai-emma" ? "E" : "M"}
+            initial={aiName.slice(0, 1)}
           />
         )}
 
@@ -832,7 +807,7 @@ export default function ChatRoom() {
         <div className="fixed inset-0 z-40 grid place-items-center overscroll-contain bg-slate-900/40 p-4">
           <div role="dialog" aria-modal="true" className="card w-full max-w-sm p-6 shadow-xl">
             <p className="text-lg font-semibold">
-              {isAi ? tr("{name} 님과 화상 대화를 할까요?", "Video chat with {name}?", { name: partner.id === "ai-emma" ? "Emma" : "Minjun" }) : tr("화상 대화를 요청할까요?", "Request a video call?")}
+              {isAi ? tr("{name} 님과 화상 대화를 할까요?", "Video chat with {name}?", { name: aiName }) : tr("화상 대화를 요청할까요?", "Request a video call?")}
             </p>
             {isAi ? (
               <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">

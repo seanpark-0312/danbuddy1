@@ -1,3 +1,5 @@
+import { AI_BUDDIES, type BuddyKey } from "./aiBuddies";
+
 // Prepared replies for the AI practice buddy, used when the AI API is not configured,
 // over its free quota, or fails. The user's last message is matched to a topic by keywords.
 
@@ -131,11 +133,39 @@ const DEFAULTS = {
   },
 };
 
-export function fallbackReply(bot: "emma" | "minjun", userText: string, turn: number): string {
+// Yuki and Sofía have their own lines for who they are; otherwise they reuse Emma's lines
+// with the country swapped (see AI_BUDDIES[...].swap).
+const OWN: Partial<Record<BuddyKey, { keys: RegExp; lines: string[] }[]>> = {
+  yuki: [
+    { keys: /where.*from|which country|your country|hometown|어디(서|에서)?\s?(왔|오셨|출신)|나라|고향|japan|일본|tokyo|도쿄/i, lines: ["도쿄에서 왔어요 🇯🇵 시부야 근처예요! 일본 가 본 적 있어요?"] },
+    { keys: /\b(major|study|studying|class|course)\b|전공|공부|수업|학과/i, lines: ["미디어커뮤니케이션 전공이에요 📸 요즘 영상 과제 때문에 바빠요. 전공이 뭐예요?"] },
+    { keys: /\b(name)\b|이름/i, lines: ["유키예요! ゆき = 눈(snow)이라는 뜻이에요 ❄️ 이름이 뭐예요?"] },
+    { keys: /\b(hi|hello|hey|nice to meet)\b|안녕|반가|처음\s?뵙|こんにちは/i, lines: ["안녕하세요! 저는 유키예요 😊 도쿄에서 온 교환학생이에요. 오늘 하루 어땠어요?"] },
+    { keys: /\b(camera|video|your face)\b|카메라|화상|얼굴/i, lines: ["와, 안녕하세요! 👋 얼굴 보니까 반가워요! すごい, 화상 처음이라 떨려요 😆"] },
+    { keys: /\(added you as a friend\)/i, lines: ["와 친구 추가 고마워요! 🥰 ありがとう! 앞으로 자주 얘기해요!"] },
+  ],
+  sofia: [
+    { keys: /where.*from|which country|your country|hometown|어디(서|에서)?\s?(왔|오셨|출신)|나라|고향|spain|스페인|madrid|마드리드/i, lines: ["I'm from Madrid, Spain 🇪🇸 Have you ever been to Spain? The food is amazing!"] },
+    { keys: /\b(major|study|studying|class|course)\b|전공|공부|수업|학과/i, lines: ["I study international relations 🌍 This semester I also take Korean 101… 어려워요 😅 What's your major?"] },
+    { keys: /\b(name)\b|이름/i, lines: ["I'm Sofía! 소피아예요 😊 What's your name?"] },
+    { keys: /\b(hi|hello|hey|hola|nice to meet)\b|안녕|반가|처음\s?뵙/i, lines: ["¡Hola! 안녕하세요 😊 I'm Sofía, an exchange student from Madrid. How's your day going?"] },
+    { keys: /\b(camera|video|your face)\b|카메라|화상|얼굴/i, lines: ["¡Hola! 👋 So nice to see you! Are you on campus right now?"] },
+    { keys: /\b(sport|football|soccer|gym)\b|축구|운동|헬스/i, lines: ["Football is my life ⚽ ¡Hala Madrid! Do you play any sports?"] },
+    { keys: /\(added you as a friend\)/i, lines: ["¡Qué bien! We're friends now 🥳 친구! Let's grab 삼겹살 sometime!"] },
+  ],
+};
+
+export function fallbackReply(bot: BuddyKey, userText: string, turn: number): string {
   const intent = INTENTS.find((i) => i.keys.test(userText));
   const hangul = /[가-힣]/.test(userText);
   const pick = <T,>(list: T[]) => list[turn % list.length];
-  if (bot === "emma") return pick(intent?.emma ?? DEFAULTS.emma);
+  const own = OWN[bot]?.find((o) => o.keys.test(userText));
+  if (own) return pick(own.lines);
+  if (bot !== "minjun") {
+    let line = pick(intent?.emma ?? DEFAULTS.emma);
+    for (const [from, to] of AI_BUDDIES[bot].swap ?? []) line = line.replace(from, to);
+    return line;
+  }
   const set = intent?.minjun ?? DEFAULTS.minjun;
   return pick(hangul ? set.ko : set.en);
 }
