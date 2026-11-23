@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useT } from "@/lib/i18n";
+import Crew from "@/components/Crew";
 
 export default function Home() {
   const tr = useT();
@@ -83,6 +84,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <Crew className="enter-3 mx-auto -mt-4 mb-10 max-w-3xl md:-mt-8" />
 
       <section className="enter-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {features.map((f) => (

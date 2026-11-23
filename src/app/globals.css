@@ -102,3 +102,12 @@ html:lang(en) body {
     animation: none;
   }
 }
+
+.crew {
+  --il-skin: #fff;
+  --il-cheek: #ffd6cc;
+  --il-accent: var(--color-brand-100);
+  --il-shirt1: var(--color-brand-50);
+  --il-shirt2: #fff;
+  --il-shirt3: var(--color-brand-200);
+}
