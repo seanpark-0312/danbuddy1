@@ -8,7 +8,7 @@ import { useVideoCall } from "@/lib/useVideoCall";
 import { sharedInterests } from "@/lib/matching";
 import type { ChatMessage, Profile } from "@/lib/types";
 import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
-import { AiBuddyScreen, speak, useAiVideo } from "@/components/AiVideo";
+import { AiBuddyScreen, BuddyLiveVideo, speak, useAiVideo } from "@/components/AiVideo";
 import { SelfTile } from "@/components/SelfTile";
 import { AttachButton, PhotoViewer } from "@/components/PhotoAttach";
 import { PipStage } from "@/components/PipStage";
@@ -82,7 +82,7 @@ export default function ChatRoom() {
   const aiPipVideo = useRef<HTMLVideoElement>(null);
   const [aiHelloDone, setAiHelloDone] = useState(false);
   const markAiHelloDone = useCallback(() => setAiHelloDone(true), []);
-  const [confirmEnd, setConfirmEnd] = useState<"ai" | "human" | null>(null);
+  const [confirmEnd, setConfirmEnd] = useState<"ai" | "human" | "leave" | null>(null);
   const [channel, setChannel] = useState<RTChannel | null>(null);
   const seenPartner = useRef(false);
   const lastTypingSent = useRef(0);
@@ -396,7 +396,7 @@ export default function ChatRoom() {
               <VideoIcon /> <span className="hidden sm:inline">{tr("화상 전환", "Video")}</span>
             </button>
           )}
-          <button className="btn-ghost px-3 py-2" onClick={leave}>
+          <button className="btn-ghost px-3 py-2" onClick={() => setConfirmEnd("leave")}>
             {tr("나가기", "Leave")}
           </button>
         </div>
@@ -492,16 +492,12 @@ export default function ChatRoom() {
           </PipStage>
         )}
         {isAi && aiVideo.state === "on" && (
-          // single-video copy of the buddy for browsers that only support video PiP (Safari, Android)
-          <video
-            ref={aiPipVideo}
-            src={`/buddy/${partner.id === "ai-emma" ? "emma" : "minjun"}/${aiTalking ? "talk" : "idle"}.mp4`}
-            muted
-            loop
-            autoPlay
-            playsInline
-            aria-hidden
-            className="pointer-events-none fixed bottom-0 left-0 h-px w-px opacity-0"
+          // live copy of the buddy for browsers that only support video PiP (Safari, Android, iPhone)
+          <BuddyLiveVideo
+            videoRef={aiPipVideo}
+            fallbackSrc={`/buddy/${partner.id === "ai-emma" ? "emma" : "minjun"}/${aiTalking ? "talk" : "idle"}.mp4`}
+            talking={aiTalking}
+            initial={partner.id === "ai-emma" ? "E" : "M"}
           />
         )}
 
@@ -799,9 +795,13 @@ export default function ChatRoom() {
         <div className="fixed inset-0 z-40 grid place-items-center overscroll-contain bg-slate-900/50 p-4" onClick={() => setConfirmEnd(null)}>
           <div role="alertdialog" aria-modal="true" aria-labelledby="end-title" className="card w-full max-w-sm p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <p id="end-title" className="text-lg font-semibold">
-              {tr("화상 대화를 종료할까요?", "End the video call?")}
+              {confirmEnd === "leave" ? tr("채팅방을 나갈까요?", "Leave this chat?") : tr("화상 대화를 종료할까요?", "End the video call?")}
             </p>
-            <p className="mt-1 text-sm text-slate-600">{tr("화상만 종료되고, 텍스트 채팅은 계속 이어져요.", "Only the video ends. Your text chat continues.")}</p>
+            <p className="mt-1 text-sm text-slate-600">
+              {confirmEnd === "leave"
+                ? tr("나가면 이 대화가 종료되고 로비로 돌아가요.", "The chat ends and you go back to the lobby.")
+                : tr("화상만 종료되고, 텍스트 채팅은 계속 이어져요.", "Only the video ends. Your text chat continues.")}
+            </p>
             <div className="mt-5 grid grid-cols-2 gap-2">
               <button className="btn-ghost" autoFocus onClick={() => setConfirmEnd(null)}>
                 {tr("취소", "Cancel")}
@@ -809,12 +809,13 @@ export default function ChatRoom() {
               <button
                 className="btn bg-red-600 text-white hover:bg-red-700"
                 onClick={() => {
-                  if (confirmEnd === "ai") stopAiVideo();
+                  if (confirmEnd === "leave") leave();
+                  else if (confirmEnd === "ai") stopAiVideo();
                   else video.end();
                   setConfirmEnd(null);
                 }}
               >
-                {tr("화상 종료", "End video")}
+                {confirmEnd === "leave" ? tr("나가기", "Leave") : tr("화상 종료", "End video")}
               </button>
             </div>
           </div>

@@ -143,9 +143,10 @@ export function AiBuddyScreen({
     <div className="relative h-full w-full overflow-hidden bg-slate-900">
       {show && clips && (
         <>
-          <video ref={idle} src={`${base}/idle.mp4`} muted loop playsInline preload="auto" className={layer} aria-hidden />
+          <video ref={idle} data-buddy-clip="idle" src={`${base}/idle.mp4`} muted loop playsInline preload="auto" className={layer} aria-hidden />
           <video
             ref={talk}
+            data-buddy-clip="talk"
             src={`${base}/talk.mp4`}
             muted
             loop
@@ -157,6 +158,7 @@ export function AiBuddyScreen({
           {!helloDone && (
             <video
               ref={hello}
+              data-buddy-clip="hello"
               src={`${base}/hello.mp4`}
               muted
               playsInline
@@ -171,7 +173,7 @@ export function AiBuddyScreen({
       )}
       {show && media === "still" && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={`${base}/still.jpg`} alt="" aria-hidden className={layer} />
+        <img data-buddy-clip="still" src={`${base}/still.jpg`} alt="" aria-hidden className={layer} />
       )}
       {show && media === "none" && <Placeholder name={displayName} talking={talking} />}
       {show && talking && media !== "none" && (
@@ -195,6 +197,104 @@ export function AiBuddyScreen({
         </span>
       )}
     </div>
+  );
+}
+
+/**
+ * Hidden <video> for browsers that only have the plain video PiP (Safari, Android, iPhone).
+ * Instead of pointing it at the mp4 (which shows a seek bar and looks like a recording), it plays
+ * a live stream drawn from whichever buddy clip is on screen, so the PiP window looks like a call.
+ * A worker drives the drawing because page timers slow down while the user is in another tab.
+ */
+export function BuddyLiveVideo({
+  videoRef,
+  fallbackSrc,
+  talking,
+  initial,
+}: {
+  videoRef: React.RefObject<HTMLVideoElement | null>;
+  fallbackSrc: string;
+  talking: boolean;
+  initial: string;
+}) {
+  const talkingRef = useRef(talking);
+  talkingRef.current = talking;
+  const [live, setLive] = useState(true);
+
+  useEffect(() => {
+    const canvas = document.createElement("canvas") as HTMLCanvasElement & { captureStream?: (fps?: number) => MediaStream };
+    canvas.width = 960;
+    canvas.height = 540;
+    const ctx = canvas.getContext("2d");
+    if (!ctx || typeof canvas.captureStream !== "function") {
+      setLive(false);
+      return;
+    }
+    const stream = canvas.captureStream(24);
+    const v = videoRef.current;
+    if (v) {
+      v.srcObject = stream;
+      v.play().catch(() => {});
+    }
+    const pick = () => {
+      const q = (k: string) => document.querySelector<HTMLVideoElement | HTMLImageElement>(`[data-buddy-clip="${k}"]`);
+      return q("hello") ?? (talkingRef.current ? q("talk") : null) ?? q("idle") ?? q("still");
+    };
+    const draw = () => {
+      const el = pick();
+      if (el instanceof HTMLVideoElement) {
+        if (el.paused) el.play().catch(() => {});
+        if (el.readyState >= 2) {
+          // same "cover" crop as the screen
+          const w = el.videoWidth || 16, h = el.videoHeight || 9;
+          const scale = Math.max(canvas.width / w, canvas.height / h);
+          ctx.drawImage(el, (canvas.width - w * scale) / 2, (canvas.height - h * scale) / 2, w * scale, h * scale);
+          return;
+        }
+      } else if (el instanceof HTMLImageElement && el.complete && el.naturalWidth) {
+        const w = el.naturalWidth, h = el.naturalHeight;
+        const scale = Math.max(canvas.width / w, canvas.height / h);
+        ctx.drawImage(el, (canvas.width - w * scale) / 2, (canvas.height - h * scale) / 2, w * scale, h * scale);
+        return;
+      }
+      ctx.fillStyle = "#1e1b4b";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 120px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(initial, canvas.width / 2, canvas.height / 2);
+    };
+    draw();
+    let worker: Worker | null = null;
+    let timer: ReturnType<typeof setInterval> | null = null;
+    try {
+      const url = URL.createObjectURL(new Blob(["setInterval(()=>postMessage(0),42)"], { type: "text/javascript" }));
+      worker = new Worker(url);
+      URL.revokeObjectURL(url);
+      worker.onmessage = draw;
+    } catch {
+      timer = setInterval(draw, 42);
+    }
+    return () => {
+      worker?.terminate();
+      if (timer) clearInterval(timer);
+      stream.getTracks().forEach((t) => t.stop());
+      if (v && v.srcObject === stream) v.srcObject = null;
+    };
+  }, [videoRef, initial]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={live ? undefined : fallbackSrc}
+      muted
+      loop={!live}
+      autoPlay
+      playsInline
+      aria-hidden
+      className="pointer-events-none fixed bottom-0 left-0 h-px w-px opacity-0"
+    />
   );
 }
 

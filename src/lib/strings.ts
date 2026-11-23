@@ -172,4 +172,6 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "This browser can't open a small window.": { ja: "このブラウザでは小窓を開けません。", zh: "此浏览器无法打开小窗口。" },
   "The call is in a small window. It stays on top while you use other tabs.": { ja: "ビデオ通話を小窓で表示中です。他のタブを使っても前面に表示されます。", zh: "视频通话正在小窗口中显示，切换到其他标签页也会一直置顶。" },
   "Bring it back here": { ja: "この画面に戻す", zh: "回到此页面" },
+  "Leave this chat?": { ja: "チャットを退出しますか？", zh: "要离开聊天吗？" },
+  "The chat ends and you go back to the lobby.": { ja: "このチャットは終了し、ロビーに戻ります。", zh: "聊天将结束，并返回大厅。" },
 };
