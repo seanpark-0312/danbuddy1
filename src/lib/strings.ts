@@ -190,4 +190,5 @@ export const EXTRA: Record<string, { ja: string; zh: string }> = {
   "You and {name} are now friends. Find them under My friends in the lobby.": { ja: "{name}さんと友だちになりました。ロビーの「マイフレンド」からまた話しかけられます。", zh: "你和 {name} 成为了好友。可以在大厅的“我的好友”中再次发起聊天。" },
   "Your buddy said not now to the friend request.": { ja: "相手は友だち申請を今回は見送りました。", zh: "对方暂时没有接受好友申请。" },
   "Your friend {name} wants to chat": { ja: "友だちの{name}さんが話したがっています", zh: "好友 {name} 想和你聊天" },
+  "Swipe right to leave the chat": { ja: "右にスワイプするとチャットを退出できます", zh: "向右滑动即可离开聊天" },
 };

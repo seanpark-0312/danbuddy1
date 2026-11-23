@@ -7,7 +7,7 @@ import { openChannel, type RTChannel } from "@/lib/realtime";
 import { useVideoCall } from "@/lib/useVideoCall";
 import { sharedInterests } from "@/lib/matching";
 import type { ChatMessage, Profile } from "@/lib/types";
-import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
+import { Avatar, useLabels } from "@/components/ProfileBits";
 import { AiBuddyScreen, BuddyLiveVideo, speak, useAiVideo } from "@/components/AiVideo";
 import { SelfTile } from "@/components/SelfTile";
 import { AttachButton, PhotoViewer } from "@/components/PhotoAttach";
@@ -84,6 +84,44 @@ export default function ChatRoom() {
   const [aiHelloDone, setAiHelloDone] = useState(false);
   const markAiHelloDone = useCallback(() => setAiHelloDone(true), []);
   const [confirmEnd, setConfirmEnd] = useState<"ai" | "human" | "leave" | null>(null);
+  // swipe from left to right to go back to the lobby (asks first, like the old Leave button)
+  const [dragX, setDragX] = useState(0);
+  const [swipeHint, setSwipeHint] = useState(false);
+  const swipe = useRef<{ x: number; y: number; on: boolean } | null>(null);
+  const swipeGoal = () => Math.min(120, window.innerWidth * 0.3);
+  function onSwipeStart(e: React.TouchEvent) {
+    const el = e.target as HTMLElement;
+    swipe.current =
+      e.touches.length === 1 && !el.closest("input, textarea, video, [data-noswipe]") ? { x: e.touches[0].clientX, y: e.touches[0].clientY, on: false } : null;
+  }
+  function onSwipeMove(e: React.TouchEvent) {
+    const s = swipe.current;
+    if (!s) return;
+    const dx = e.touches[0].clientX - s.x;
+    const dy = e.touches[0].clientY - s.y;
+    if (!s.on) {
+      if (dx > 14 && dx > Math.abs(dy) * 1.5) s.on = true;
+      else if (Math.abs(dy) > 14 || dx < -14) swipe.current = null;
+      if (!s.on) return;
+    }
+    setDragX(Math.max(0, dx));
+  }
+  function onSwipeEnd() {
+    if (swipe.current?.on && dragX >= swipeGoal()) setConfirmEnd("leave");
+    swipe.current = null;
+    setDragX(0);
+  }
+  useEffect(() => {
+    // tell phone users once how to leave, since there is no button for it
+    if (!window.matchMedia("(pointer: coarse)").matches) return;
+    try {
+      if (sessionStorage.getItem("danbuddy.swipeHint")) return;
+      sessionStorage.setItem("danbuddy.swipeHint", "1");
+    } catch {}
+    setSwipeHint(true);
+    const t = setTimeout(() => setSwipeHint(false), 4500);
+    return () => clearTimeout(t);
+  }, []);
   const [channel, setChannel] = useState<RTChannel | null>(null);
   const [friend, setFriend] = useState<"none" | "sent" | "incoming" | "friends">("none");
   const friendRef = useRef(friend);
@@ -444,17 +482,42 @@ export default function ChatRoom() {
 
   return (
     <main className="mx-auto grid h-[calc(100dvh-56px)] max-w-6xl gap-4 px-0 sm:px-4 sm:py-4 lg:grid-cols-[1fr_300px]">
-      <section className="flex min-h-0 flex-col overflow-hidden bg-white sm:rounded-xl sm:border sm:border-slate-200">
+      {dragX > 0 && (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed left-3 top-1/2 z-30 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-slate-900/70 text-white"
+          style={{ opacity: Math.min(1, dragX / swipeGoal()) }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </div>
+      )}
+      <section
+        className={`flex min-h-0 touch-pan-y flex-col overflow-hidden bg-white sm:rounded-xl sm:border sm:border-slate-200 ${dragX ? "" : "transition-transform duration-200"}`}
+        style={dragX ? { transform: `translateX(${Math.round(dragX * 0.5)}px)` } : undefined}
+        onTouchStart={onSwipeStart}
+        onTouchMove={onSwipeMove}
+        onTouchEnd={onSwipeEnd}
+        onTouchCancel={onSwipeEnd}
+      >
         {/* header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
+          {/* on a computer there is no swipe, so a back arrow leaves the room */}
+          <button
+            type="button"
+            className="-ml-2 hidden h-9 w-9 shrink-0 place-items-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800 [@media(pointer:fine)]:grid"
+            onClick={() => setConfirmEnd("leave")}
+            aria-label={tr("나가기", "Leave")}
+            title={tr("나가기", "Leave")}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
           <Avatar p={partner} />
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <p className="truncate font-semibold">{partner.nickname}</p>
-              <span className="hidden min-[430px]:inline-flex">
-                <RoleBadge p={partner} />
-              </span>
-            </div>
+            <p className="break-words font-semibold leading-snug">{partner.nickname}</p>
             <p className="flex items-center gap-1.5 whitespace-nowrap text-xs text-slate-500">
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${partnerHere ? "bg-emerald-500" : "bg-slate-300"}`} />
               {partnerLeft ? tr("나감", "Left") : partnerHere ? tr("접속 중", "Online") : tr("상대를 기다리는 중", "Waiting for buddy")}
@@ -486,9 +549,6 @@ export default function ChatRoom() {
               <VideoIcon /> <span className="hidden sm:inline">{tr("화상 전환", "Video")}</span>
             </button>
           )}
-          <button className="btn-ghost px-3 py-2" onClick={() => setConfirmEnd("leave")}>
-            {tr("나가기", "Leave")}
-          </button>
         </div>
 
         {/* video area */}
@@ -724,7 +784,7 @@ export default function ChatRoom() {
           }}
         >
           {topics.length > 0 && (
-            <div className="-mx-3 mb-2 flex gap-2 overflow-x-auto px-3 lg:hidden">
+            <div data-noswipe className="-mx-3 mb-2 flex gap-2 overflow-x-auto px-3 lg:hidden">
               {topics.map((t, i) => (
                 <button
                   type="button"
@@ -890,6 +950,13 @@ export default function ChatRoom() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {swipeHint && (
+        <div role="status" className="pointer-events-none fixed bottom-44 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-slate-900/80 px-4 py-2 text-sm text-white">
+          <span aria-hidden>👉</span>
+          {tr("화면을 오른쪽으로 밀면 대화방을 나갈 수 있어요", "Swipe right to leave the chat")}
         </div>
       )}
 

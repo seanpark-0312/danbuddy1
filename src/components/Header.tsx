@@ -9,9 +9,7 @@ export default function Header() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 font-bold text-brand-900">
           <span aria-hidden="true" className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600 text-sm font-black text-white">D</span>
-          <span translate="no">
-            DanBuddy <span className="font-medium text-slate-500">{tr("단버디", "")}</span>
-          </span>
+          <span translate="no">DanBuddy</span>
         </Link>
         <nav className="flex items-center gap-2">
           <Link href="/lobby" className="hidden rounded-lg px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 sm:block">
