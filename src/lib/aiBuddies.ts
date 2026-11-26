@@ -1,4 +1,5 @@
 import type { Profile } from "./types";
+import type { FlagCode } from "@/components/Flag";
 
 /**
  * The AI practice buddies. Korean students can pick one of the international students;
@@ -11,6 +12,8 @@ export interface AiBuddy {
   key: BuddyKey;
   name: string; // short name for the video screen
   flag: string;
+  /** drawn as SVG, because flag emoji show as letters on Windows */
+  flagCode: FlagCode;
   profile: Profile;
   persona: string;
   /** words swapped into Emma's prepared replies when the AI is unavailable */
@@ -22,6 +25,7 @@ export const AI_BUDDIES: Record<BuddyKey, AiBuddy> = {
     key: "emma",
     name: "Emma",
     flag: "🇫🇷",
+    flagCode: "fr",
     profile: {
       id: "ai-emma",
       nickname: "Emma (AI)",
@@ -41,6 +45,7 @@ export const AI_BUDDIES: Record<BuddyKey, AiBuddy> = {
     key: "yuki",
     name: "Yuki",
     flag: "🇯🇵",
+    flagCode: "jp",
     profile: {
       id: "ai-yuki",
       nickname: "Yuki (AI)",
@@ -65,6 +70,7 @@ export const AI_BUDDIES: Record<BuddyKey, AiBuddy> = {
     key: "sofia",
     name: "Sofía",
     flag: "🇪🇸",
+    flagCode: "es",
     profile: {
       id: "ai-sofia",
       nickname: "Sofía (AI)",
@@ -89,6 +95,7 @@ export const AI_BUDDIES: Record<BuddyKey, AiBuddy> = {
     key: "minjun",
     name: "Minjun",
     flag: "🇰🇷",
+    flagCode: "kr",
     profile: {
       id: "ai-minjun",
       nickname: "민준 Minjun (AI)",
