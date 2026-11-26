@@ -7,6 +7,7 @@ and shows an animated placeholder when they do not.
     emma/idle.mp4    loops while listening (nods, blinks)
     emma/talk.mp4    loops while the buddy's reply is shown and spoken
     emma/still.jpg   used instead when there are no clips: one photo, shown still with a speaking indicator
+    yuki/, sofia/    same files for Yuki and Sofía (still.jpg now; add the three clips to switch to video)
     minjun/...       same three files for Minjun (optional)
 
 MP4 (H.264), 16:9, 720p is enough, no audio needed, ideally under 5 MB each.

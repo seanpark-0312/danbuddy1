@@ -3,7 +3,7 @@ import type { Profile } from "./types";
 /**
  * The AI practice buddies. Korean students can pick one of the international students;
  * international students talk with Minjun. Each one's room is /chat/ai-<key>-<random>.
- * Video clips live in /public/buddy/<key>/ (Emma has them; the others show a placeholder).
+ * Video clips live in /public/buddy/<key>/ (Emma has clips; Yuki and Sofía have a still photo until their clips are made).
  */
 export type BuddyKey = "emma" | "yuki" | "sofia" | "minjun";
 
