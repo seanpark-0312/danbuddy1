@@ -8,6 +8,7 @@ import { isDemoMode, openChannel, type RTChannel } from "@/lib/realtime";
 import { matchScore, sharedInterests } from "@/lib/matching";
 import type { Friend, Profile } from "@/lib/types";
 import { Avatar, RoleBadge, useLabels } from "@/components/ProfileBits";
+import { Flag } from "@/components/Flag";
 import Crew from "@/components/Crew";
 import { AI_BUDDIES, INTERNATIONAL_BUDDIES, buddyById, type BuddyKey } from "@/lib/aiBuddies";
 
@@ -357,8 +358,8 @@ export default function Lobby() {
                 return (
                   <li key={k} className="card flex items-center gap-3 rounded-[18px] p-3 sm:flex-col sm:items-stretch sm:rounded-[22px] sm:p-[18px]">
                     <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-[#f1f5fb] text-2xl sm:h-12 sm:w-12 sm:rounded-[15px]" aria-hidden>
-                        {b.flag}
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-[#f1f5fb] sm:h-12 sm:w-12 sm:rounded-[15px]" aria-hidden>
+                        <Flag code={b.flagCode} className="h-[18px] w-[27px] overflow-hidden rounded-[3px] sm:h-5 sm:w-[30px]" />
                       </span>
                       <span className="min-w-0">
                         <span className="flex items-center gap-1.5 text-[15.5px] font-semibold">
