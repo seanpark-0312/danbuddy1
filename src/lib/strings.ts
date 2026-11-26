@@ -1,5 +1,8 @@
 // Japanese and Chinese UI strings, keyed by the English text passed to tr().
 export const EXTRA: Record<string, { ja: string; zh: string }> = {
+  "Create your profile first": { ja: "まずプロフィールを作成してください", zh: "请先创建你的资料" },
+  "You can see your friends after you set up a profile.": { ja: "友だち一覧はプロフィールを作成すると見られます。", zh: "创建资料后即可查看好友列表。" },
+  "Create my profile": { ja: "プロフィールを作成する", zh: "去创建资料" },
   "Find a buddy": { ja: "バディを探す", zh: "寻找伙伴" },
   "My profile": { ja: "マイプロフィール", zh: "我的资料" },
   "AI buddy matching": { ja: "AIバディマッチング", zh: "AI 伙伴匹配" },
